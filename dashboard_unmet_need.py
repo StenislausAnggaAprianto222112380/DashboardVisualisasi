@@ -50,9 +50,9 @@ with col3:
     bottom = df.nsmallest(1, "unpkpd")
     st.markdown("#### Kabupaten/Kota Tertinggi:")
     for _, row in top3.iterrows():
-        st.markdown(f"- {row['KABKOT']}: **{row['unpkpd']:.1f}%**")
+        st.markdown(f"- {row['kabkot']}: **{row['unpkpd']:.1f}%**")
     st.markdown("#### Kabupaten/Kota Terendah:")
-    st.markdown(f"- {bottom.iloc[0]['KABKOT']}: **{bottom.iloc[0]['unpkpd']:.1f}%**")
+    st.markdown(f"- {bottom.iloc[0]['kabkot']}: **{bottom.iloc[0]['unpkpd']:.1f}%**")
 
 # --- PETA INTERAKTIF ---
 st.markdown("## 🗺️ Peta Interaktif")
