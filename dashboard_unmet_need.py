@@ -118,7 +118,12 @@ folium.GeoJson(
         labels=False,
         style=("background-color: white; padding: 5px;")
     ),
-    style_function=style_function
+    style_function=style_function,  # warna default
+    highlight_function=lambda feature: {
+        "weight": 3,
+        "color": "blue",
+        "fillOpacity": 0.9
+    }
 ).add_to(m)
 
 # Legend Manual
