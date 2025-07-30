@@ -81,10 +81,10 @@ m = folium.Map(location=[-7.5, 110.0], zoom_start=7.2, tiles="cartodbpositron")
 for _, row in gdf_filtered.iterrows():
     color = kategori_colors.get(row["cat_unpk"], "gray")
     tooltip = f"""
-    <b>Kode:</b> {row['kabkot']}<br>
-    <b>Unmet Need:</b> {row['unpkpd']:.1f}%<br>
-    <b>Kategori:</b> {row['cat_unpk']}<br>
-    <b>Kualitas:</b> {row['cat_rse']}
+    <b>{row['KABKOT']}</b><br>
+    Unmet Need: {row['unpkpd']:.1f}%<br>
+    Kategori: {row['cat_unpk']}<br>
+    Kualitas: {row['cat_rse']}
     """
     folium.GeoJson(
         row["geometry"],
