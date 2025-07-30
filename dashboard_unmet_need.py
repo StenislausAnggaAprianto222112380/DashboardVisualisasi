@@ -74,28 +74,39 @@ if kategori_filter != "Semua":
 if kualitas_filter != "Semua":
     gdf_filtered = gdf_filtered[gdf_filtered["cat_rse"] == kualitas_filter]
 
-# Peta dasar
+# Buat kolom tooltip dalam satu string
+gdf_filtered["tooltip_text"] = (
+    "<b>" + gdf_filtered["KABKOT"] + "</b><br>"
+    + "Unmet Need: " + gdf_filtered["unpkpd"].round(1).astype(str) + "%<br>"
+    + "Kategori: " + gdf_filtered["cat_unpk"] + "<br>"
+    + "Kualitas: " + gdf_filtered["cat_rse"]
+)
+
+# Map dasar
 m = folium.Map(location=[-7.5, 110.0], zoom_start=7.2, tiles="cartodbpositron")
 
-# Tambahkan poligon
-for _, row in gdf_filtered.iterrows():
-    color = kategori_colors.get(row["cat_unpk"], "gray")
-    tooltip = f"""
-    <b>{row['KABKOT']}</b><br>
-    Unmet Need: {row['unpkpd']:.1f}%<br>
-    Kategori: {row['cat_unpk']}<br>
-    Kualitas: {row['cat_rse']}
-    """
-    folium.GeoJson(
-        row["geometry"],
-        style_function=lambda feature, clr=color: {
-            "fillColor": clr,
-            "color": "black",
-            "weight": 0.5,
-            "fillOpacity": 0.7
-        },
-        tooltip=tooltip
-    ).add_to(m)
+# Fungsi styling
+def style_function(feature):
+    kategori = feature["properties"]["cat_unpk"]
+    return {
+        "fillColor": kategori_colors.get(kategori, "gray"),
+        "color": "black",
+        "weight": 0.5,
+        "fillOpacity": 0.7
+    }
+
+# Tambahkan GeoJson seluruh kabupaten dalam satu objek
+folium.GeoJson(
+    gdf_filtered,
+    tooltip=folium.GeoJsonTooltip(
+        fields=["tooltip_text"],
+        aliases=[""],
+        sticky=True,
+        labels=False,
+        style=("background-color: white; padding: 5px;")
+    ),
+    style_function=style_function
+).add_to(m)
 
 # Legend Manual
 legend_html = """
