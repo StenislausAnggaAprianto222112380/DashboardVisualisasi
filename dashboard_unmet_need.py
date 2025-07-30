@@ -20,19 +20,8 @@ gdf_merged = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
 # --- KONFIGURASI DASHBOARD ---
 st.set_page_config(page_title="Dashboard Unmet Need Disabilitas", layout="wide")
 
-st.markdown("## 📊 **Dashboard Unmet Need Pelayanan Kesehatan pada Penyandang Disabilitas**")
+st.markdown("## **Dashboard Unmet Need Pelayanan Kesehatan pada Penyandang Disabilitas**")
 st.markdown("### Tingkat Kabupaten/Kota di Pulau Jawa Tahun 2023")
-
-# --- LOAD DATA ---
-df = pd.read_excel("DatasetVisualisasi.xlsx")
-gdf = gpd.read_file("KabJawa.shp")
-
-# Pastikan kolom join bertipe sama
-df["kabkot"] = df["kabkot"].astype(str)
-gdf["IDKAB"] = gdf["IDKAB"].astype(str)
-
-# Gabungkan data .shp dan .xlsx
-gdf_merged = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
 
 # --- WARNA KATEGORI UNPKPD ---
 kategori_colors = {
@@ -41,8 +30,6 @@ kategori_colors = {
     "Sedang": "#F3D64D",
     "Rendah": "#48C28E"
 }
-
-# Jika kategori hanya "Rendah", "Sedang", "Tinggi" → sesuaikan
 if not "Sangat Tinggi" in df["cat_unpk"].unique():
     kategori_colors = {
         "Tinggi": "#F9893E",
@@ -52,26 +39,23 @@ if not "Sangat Tinggi" in df["cat_unpk"].unique():
 
 # --- STATISTIK RINGKAS ---
 col1, col2, col3 = st.columns([1.2, 1.5, 2])
-
 with col1:
     mean_val = df["unpkpd"].mean()
-    st.markdown("#### Rata-rata Unmet Need Provinsi")
+    st.markdown("#### Rata-rata UNPK PD Pulau Jawa")
     st.markdown(f"<h2 style='color:#D62246'>{mean_val:.1f}%</h2>", unsafe_allow_html=True)
-
 with col2:
     st.markdown("#### Sebaran Kabupaten/Kota:")
     for kategori in kategori_colors.keys():
         jumlah = df[df["cat_unpk"] == kategori].shape[0]
         st.markdown(f"<span style='color:{kategori_colors[kategori]}'>●</span> {kategori}: {jumlah}", unsafe_allow_html=True)
-
 with col3:
     top3 = df.nlargest(3, "unpkpd")
     bottom = df.nsmallest(1, "unpkpd")
     st.markdown("#### Kabupaten/Kota Tertinggi:")
     for _, row in top3.iterrows():
-        st.markdown(f"- {row['kabkot']}: **{row['unpkpd']:.1f}%**")
+        st.markdown(f"- {row['KABKOT']}: **{row['unpkpd']:.1f}%**")
     st.markdown("#### Kabupaten/Kota Terendah:")
-    st.markdown(f"- {bottom.iloc[0]['kabkot']}: **{bottom.iloc[0]['unpkpd']:.1f}%**")
+    st.markdown(f"- {bottom.iloc[0]['KABKOT']}: **{bottom.iloc[0]['unpkpd']:.1f}%**")
 
 # --- PETA INTERAKTIF ---
 st.markdown("## 🗺️ Peta Interaktif")
@@ -87,7 +71,7 @@ if kategori_filter != "Semua":
 if kualitas_filter != "Semua":
     gdf_filtered = gdf_filtered[gdf_filtered["cat_rse"] == kualitas_filter]
 
-# Buat kolom tooltip dalam satu string
+# Tooltip info
 gdf_filtered["tooltip_text"] = (
     "<b>" + gdf_filtered["KABKOT"] + "</b><br>"
     + "Unmet Need: " + gdf_filtered["unpkpd"].round(1).astype(str) + "%<br>"
@@ -95,10 +79,10 @@ gdf_filtered["tooltip_text"] = (
     + "Kualitas: " + gdf_filtered["cat_rse"]
 )
 
-# Map dasar
+# Buat map dasar
 m = folium.Map(location=[-7.5, 110.0], zoom_start=7.2, tiles="cartodbpositron")
 
-# Fungsi styling
+# Warna tiap wilayah
 def style_function(feature):
     kategori = feature["properties"]["cat_unpk"]
     return {
@@ -108,8 +92,8 @@ def style_function(feature):
         "fillOpacity": 0.7
     }
 
-# Tambahkan GeoJson seluruh kabupaten dalam satu objek
-folium.GeoJson(
+# Tambahkan seluruh wilayah
+geo = folium.GeoJson(
     gdf_filtered,
     tooltip=folium.GeoJsonTooltip(
         fields=["tooltip_text"],
@@ -118,15 +102,17 @@ folium.GeoJson(
         labels=False,
         style=("background-color: white; padding: 5px;")
     ),
-    style_function=style_function,  # warna default
+    style_function=style_function,
     highlight_function=lambda feature: {
         "weight": 3,
         "color": "blue",
         "fillOpacity": 0.9
-    }
-).add_to(m)
+    },
+    name="geojson"
+)
+geo.add_to(m)
 
-# Legend Manual
+# LEGEND
 legend_html = """
 <div style='position: fixed; bottom: 70px; left: 30px; width: 180px; height: auto;
      background-color: white; border:2px solid grey; z-index:9999; font-size:14px;
@@ -140,8 +126,21 @@ legend_html = """
 """
 m.get_root().html.add_child(folium.Element(legend_html))
 
-# Tampilkan peta
+# Tampilkan Peta
 st_data = st_folium(m, width=1000, height=600)
+
+# === HIGHLIGHT JIKA DIKLIK ===
+if st_data.get("last_active_drawing"):
+    clicked_geom = st_data["last_active_drawing"]["geometry"]
+    clicked_shape = gpd.GeoSeries.from_geojson(str(clicked_geom)).set_crs(gdf.crs)
+    folium.GeoJson(
+        clicked_shape,
+        style_function=lambda x: {
+            "color": "red",
+            "weight": 4,
+            "fillOpacity": 0
+        }
+    ).add_to(m)
 
 # --- FOOTER ---
 st.markdown("""<hr/>
