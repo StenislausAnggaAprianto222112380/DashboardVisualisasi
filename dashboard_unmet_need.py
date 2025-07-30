@@ -3,6 +3,7 @@ import pandas as pd
 import geopandas as gpd
 import folium
 from streamlit_folium import st_folium
+from shapely.geometry import shape
 
 # --- CACHE PEMBACAAN DATA ---
 @st.cache_data
@@ -131,7 +132,6 @@ st_data = st_folium(m, width=1000, height=600)
 
 # === HIGHLIGHT JIKA DIKLIK ===
 # Tambahkan import shapely
-from shapely.geometry import shape
 
 # Ganti bagian highlight jika diklik
 if st_data.get("last_active_drawing"):
