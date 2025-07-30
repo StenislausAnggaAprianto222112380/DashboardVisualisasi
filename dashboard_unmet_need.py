@@ -4,6 +4,19 @@ import geopandas as gpd
 import folium
 from streamlit_folium import st_folium
 
+# --- CACHE PEMBACAAN DATA ---
+@st.cache_data
+def load_data():
+    df = pd.read_excel("DatasetVisualisasi.xlsx")
+    gdf = gpd.read_file("KabJawa.shp")
+    df["kabkot"] = df["kabkot"].astype(str)
+    gdf["IDKAB"] = gdf["IDKAB"].astype(str)
+    return df, gdf
+
+# --- MUAT DATA SEKALI SAJA (cached) ---
+df, gdf = load_data()
+gdf_merged = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
+
 # --- KONFIGURASI DASHBOARD ---
 st.set_page_config(page_title="Dashboard Unmet Need Disabilitas", layout="wide")
 
