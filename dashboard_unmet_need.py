@@ -91,6 +91,6 @@ st.markdown("""
 <hr/>
 <center>
 2025 Skripsi TA | D-IV Komputasi Statistik | Politeknik Statistika STIS <br>
-Email: 222112300@stis.ac.id
+Email: 222112380@stis.ac.id
 </center>
 """, unsafe_allow_html=True)
