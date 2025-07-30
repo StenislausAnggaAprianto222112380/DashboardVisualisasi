@@ -130,9 +130,14 @@ m.get_root().html.add_child(folium.Element(legend_html))
 st_data = st_folium(m, width=1000, height=600)
 
 # === HIGHLIGHT JIKA DIKLIK ===
+# Tambahkan import shapely
+from shapely.geometry import shape
+
+# Ganti bagian highlight jika diklik
 if st_data.get("last_active_drawing"):
     clicked_geom = st_data["last_active_drawing"]["geometry"]
-    clicked_shape = gpd.GeoSeries.from_geojson(str(clicked_geom)).set_crs(gdf.crs)
+    clicked_shape = gpd.GeoDataFrame(geometry=[shape(clicked_geom)], crs=gdf.crs)
+
     folium.GeoJson(
         clicked_shape,
         style_function=lambda x: {
@@ -141,7 +146,7 @@ if st_data.get("last_active_drawing"):
             "fillOpacity": 0
         }
     ).add_to(m)
-
+    
 # --- FOOTER ---
 st.markdown("""<hr/>
 <center>
