@@ -3,148 +3,121 @@ import pandas as pd
 import geopandas as gpd
 import folium
 from streamlit_folium import st_folium
-from shapely.geometry import shape
+from branca.colormap import linear
 
-# --- CACHE PEMBACAAN DATA ---
-@st.cache_data
-def load_data():
-    df = pd.read_excel("DatasetVisualisasi.xlsx")
-    gdf = gpd.read_file("KabJawa.shp")
-    df["kabkot"] = df["kabkot"].astype(str)
-    gdf["IDKAB"] = gdf["IDKAB"].astype(str)
-    return df, gdf
+# --- SETUP HALAMAN ---
+st.set_page_config(page_title="Unmet Need Disabilitas 2023", layout="wide")
 
-# --- MUAT DATA SEKALI SAJA (cached) ---
-df, gdf = load_data()
-gdf_merged = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
-
-# --- KONFIGURASI DASHBOARD ---
-st.set_page_config(page_title="Dashboard Unmet Need Disabilitas", layout="wide")
-
-st.markdown("## **Dashboard Unmet Need Pelayanan Kesehatan pada Penyandang Disabilitas**")
-st.markdown("### Tingkat Kabupaten/Kota di Pulau Jawa Tahun 2023")
-
-# --- WARNA KATEGORI UNPKPD ---
-kategori_colors = {
-    "Sangat Tinggi": "#D62246",
-    "Tinggi": "#F9893E",
-    "Sedang": "#F3D64D",
-    "Rendah": "#48C28E"
-}
-if "Sangat Tinggi" not in df["cat_unpk"].unique():
-    kategori_colors.pop("Sangat Tinggi")
-
-# --- STATISTIK RINGKAS ---
-col1, col2, col3 = st.columns([1.2, 1.5, 2])
-with col1:
-    mean_val = df["unpkpd"].mean()
-    st.markdown("#### Rata-rata UNPK PD Pulau Jawa")
-    st.markdown(f"<h2 style='color:#D62246'>{mean_val:.1f}%</h2>", unsafe_allow_html=True)
-with col2:
-    st.markdown("#### Sebaran Kabupaten/Kota:")
-    for kategori in kategori_colors:
-        jumlah = df[df["cat_unpk"] == kategori].shape[0]
-        st.markdown(f"<span style='color:{kategori_colors[kategori]}'>●</span> {kategori}: {jumlah}", unsafe_allow_html=True)
-with col3:
-    top3 = df.nlargest(3, "unpkpd")
-    bottom = df.nsmallest(1, "unpkpd")
-    st.markdown("#### Kabupaten/Kota Tertinggi:")
-    for _, row in top3.iterrows():
-        st.markdown(f"- {row['kabkot']}: **{row['unpkpd']:.1f}%**")
-    st.markdown("#### Kabupaten/Kota Terendah:")
-    st.markdown(f"- {bottom.iloc[0]['kabkot']}: **{bottom.iloc[0]['unpkpd']:.1f}%**")
-
-# --- PETA INTERAKTIF ---
-st.markdown("## 🗺️ Peta Interaktif")
-
-# Filter interaktif
-kategori_filter = st.selectbox("Pilih Kategori Unmet Need", options=["Semua"] + sorted(df["cat_unpk"].unique()))
-kualitas_filter = st.selectbox("Pilih Kualitas Estimasi", options=["Semua"] + sorted(df["cat_rse"].unique()))
-
-# Filter data
-gdf_filtered = gdf_merged.copy()
-if kategori_filter != "Semua":
-    gdf_filtered = gdf_filtered[gdf_filtered["cat_unpk"] == kategori_filter]
-if kualitas_filter != "Semua":
-    gdf_filtered = gdf_filtered[gdf_filtered["cat_rse"] == kualitas_filter]
-
-# Tooltip info
-gdf_filtered["tooltip_text"] = (
-    "<b>" + gdf_filtered["KABKOT"] + "</b><br>"
-    + "Unmet Need: " + gdf_filtered["unpkpd"].round(1).astype(str) + "%<br>"
-    + "Kategori: " + gdf_filtered["cat_unpk"] + "<br>"
-    + "Kualitas: " + gdf_filtered["cat_rse"]
-)
-
-# Buat map dasar
-m = folium.Map(location=[-7.5, 110.0], zoom_start=7.2, tiles="cartodbpositron", control_scale=True)
-
-# Warna tiap wilayah
-def style_function(feature):
-    kategori = feature["properties"].get("cat_unpk", "")
-    return {
-        "fillColor": kategori_colors.get(kategori, "gray"),
-        "color": "black",
-        "weight": 0.5,
-        "fillOpacity": 0.7
+# --- HEADER ---
+st.markdown("""
+    <style>
+    .big-title {
+        font-size:36px !important;
+        font-weight: 700;
+        color: #1B4332;
+        margin-bottom: 0;
     }
+    .subtext {
+        font-size: 15px;
+        color: #333;
+        margin-top: 0;
+    }
+    .card-title {
+        font-weight: 600;
+        font-size: 18px;
+    }
+    .card-subtext {
+        font-size: 14px;
+        color: #777;
+    }
+    .card-value {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 5px 0 0 0;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# Tambahkan seluruh wilayah
-geo = folium.GeoJson(
-    gdf_filtered,
-    tooltip=folium.GeoJsonTooltip(
-        fields=["tooltip_text"],
-        aliases=[""],
-        sticky=True,
-        labels=False,
-        style=("background-color: white; padding: 5px;")
-    ),
-    style_function=style_function,
-    highlight_function=lambda feature: {
-        "weight": 3,
-        "color": "blue",
-        "fillOpacity": 0.9
-    },
-    name="geojson"
-)
-geo.add_to(m)
+st.markdown("<p class='big-title'>Unmet Need Pelayanan Kesehatan pada Penyandang Disabilitas di Pulau Jawa Tahun 2023</p>", unsafe_allow_html=True)
 
-# LEGEND DINAMIS BERDASARKAN KATEGORI YANG TERSEDIA
-legend_items = "".join(
-    f"<span style='background-color:{kategori_colors[k]};'>&nbsp;&nbsp;&nbsp;&nbsp;</span> {k}<br>"
-    for k in kategori_colors
-)
-legend_html = f"""
-<div style='position: fixed; bottom: 70px; left: 30px; width: 180px; height: auto;
-     background-color: white; border:2px solid grey; z-index:9999; font-size:14px;
-     padding: 10px; border-radius: 8px'>
-<b>Legenda:</b><br>
-{legend_items}
+st.markdown("<p class='subtext'>Unmet need pelayanan kesehatan pada penyandang disabilitas merupakan proporsi penyandang disabilitas yang merasa sakit dalam 1 tahun terakhir namun tidak mendapatkan pelayanan yang dibutuhkan (BPS).</p>", unsafe_allow_html=True)
+
+# --- DATA ---
+df = pd.read_excel("DatasetVisualisasi.xlsx")
+
+# Statistik ringkas
+rata2_unmet = df['unpkpd'].mean()
+prov_tertinggi = df.loc[df['unpkpd'].idxmax()]
+prov_terendah = df.loc[df['unpkpd'].idxmin()]
+
+summary = {
+    'tinggi': df[df['cat_unpk'] == 'Sangat Tinggi'].shape[0],
+    'sedang': df[df['cat_unpk'] == 'Sedang'].shape[0],
+    'rendah': df[df['cat_unpk'] == 'Rendah'].shape[0]
+}
+
+# --- STATISTIK KARTU ---
+st.markdown("""
+<div style='display: flex; gap: 1rem;'>
+    <div style='flex:1; background-color: #E7F5EC; padding: 1.25rem; border-radius: 10px;'>
+        <div class='card-title'>Unmet Need</div>
+        <div class='card-value'>{:.1f}%</div>
+        <div class='card-subtext'>Rata-rata unmet need di Pulau Jawa</div>
+    </div>
+    <div style='flex:1; background-color: #F3F7FA; padding: 1.25rem; border-radius: 10px;'>
+        <div class='card-title'>Sebaran Wilayah</div>
+        <div class='card-value'>Tinggi: {tinggi} | Sedang: {sedang} | Rendah: {rendah}</div>
+    </div>
+    <div style='flex:1; background-color: #FFF4F4; padding: 1.25rem; border-radius: 10px;'>
+        <div class='card-title'>Kab/Kota Tertinggi</div>
+        <div class='card-value'>{} <br> {:.1f}%</div>
+    </div>
+    <div style='flex:1; background-color: #F1FFF0; padding: 1.25rem; border-radius: 10px;'>
+        <div class='card-title'>Kab/Kota Terendah</div>
+        <div class='card-value'>{} <br> {:.1f}%</div>
+    </div>
 </div>
-"""
-m.get_root().html.add_child(folium.Element(legend_html))
+""".format(
+    rata2_unmet,
+    summary['tinggi'], summary['sedang'], summary['rendah'],
+    prov_tertinggi['name_kabkot'], prov_tertinggi['unpkpd'],
+    prov_terendah['name_kabkot'], prov_terendah['unpkpd']
+), unsafe_allow_html=True)
 
-# Tampilkan Peta
-st_data = st_folium(m, width=1000, height=600)
+# --- PETA ---
+gdf = gpd.read_file("KabJawa.geojson")
+gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
 
-# Highlight jika diklik
-if st_data.get("last_active_drawing"):
-    clicked_geom = st_data["last_active_drawing"]["geometry"]
-    clicked_shape = gpd.GeoDataFrame(geometry=[shape(clicked_geom)], crs=gdf.crs)
+color_dict = {
+    'Sangat Tinggi': '#B71C1C',
+    'Tinggi': '#F44336',
+    'Sedang': '#FFEB3B',
+    'Rendah': '#81C784',
+    'Sangat Rendah': '#388E3C'
+}
 
+m = folium.Map(location=[-7.5, 111], zoom_start=6, tiles="cartodbpositron")
+
+for _, row in gdf.iterrows():
     folium.GeoJson(
-        clicked_shape,
-        style_function=lambda x: {
-            "color": "red",
-            "weight": 4,
-            "fillOpacity": 0
-        }
+        row['geometry'],
+        style_function=lambda feature, color=color_dict[row['cat_unpk']]: {
+            'fillColor': color,
+            'color': 'black',
+            'weight': 0.5,
+            'fillOpacity': 0.6
+        },
+        tooltip=folium.Tooltip(f"{row['name_kabkot']}: {row['unpkpd']}%")
     ).add_to(m)
 
-# --- FOOTER ---
-st.markdown("""<hr/>
-<center>
-2025 Skripsi TA | D-IV Komputasi Statistik | Politeknik Statistika STIS <br>
-Email: 222112380@stis.ac.id
-</center>
+st.markdown("## Peta Interaktif")
+st_folium(m, width=1200, height=500)
+
+# --- CATATAN KAKI ---
+st.markdown("""
+---
+<p style='font-size:13px; color:#999;'>
+Dashboard ini dikembangkan menggunakan Streamlit sebagai bagian dari visualisasi data Unmet Need pelayanan kesehatan pada penyandang disabilitas di Pulau Jawa tahun 2023.<br>
+Sumber data: Badan Pusat Statistik (BPS).
+</p>
 """, unsafe_allow_html=True)
