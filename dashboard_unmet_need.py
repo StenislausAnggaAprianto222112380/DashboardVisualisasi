@@ -86,6 +86,11 @@ st.markdown("""
 
 # --- PETA ---
 gdf = gpd.read_file("KabJawa.geojson")
+
+# Samakan tipe data kolom join
+gdf["IDKAB"] = gdf["IDKAB"].astype(str)
+df["kabkot"] = df["kabkot"].astype(str)
+
 gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
 
 color_dict = {
