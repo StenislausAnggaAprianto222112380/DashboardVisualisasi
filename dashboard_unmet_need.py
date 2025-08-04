@@ -47,8 +47,8 @@ df = pd.read_excel("DatasetVisualisasi.xlsx")
 
 # Statistik ringkas
 rata2_unmet = df['unpkpd'].mean()
-prov_tertinggi = df.loc[df['unpkpd'].idxmax()]
-prov_terendah = df.loc[df['unpkpd'].idxmin()]
+kab_tertinggi = df.loc[df['unpkpd'].idxmax()]
+kab_terendah = df.loc[df['unpkpd'].idxmin()]
 
 summary = {
     'tinggi': df[df['cat_unpk'] == 'Sangat Tinggi'].shape[0],
@@ -66,7 +66,7 @@ st.markdown("""
     </div>
     <div style='flex:1; background-color: #F3F7FA; padding: 1.25rem; border-radius: 10px;'>
         <div class='card-title'>Sebaran Wilayah</div>
-        <div class='card-value'>Tinggi: {tinggi} | Sedang: {sedang} | Rendah: {rendah}</div>
+        <div class='card-value'>Tinggi: {} | Sedang: {} | Rendah: {}</div>
     </div>
     <div style='flex:1; background-color: #FFF4F4; padding: 1.25rem; border-radius: 10px;'>
         <div class='card-title'>Kab/Kota Tertinggi</div>
@@ -80,8 +80,8 @@ st.markdown("""
 """.format(
     rata2_unmet,
     summary['tinggi'], summary['sedang'], summary['rendah'],
-    prov_tertinggi['name_kabkot'], prov_tertinggi['unpkpd'],
-    prov_terendah['name_kabkot'], prov_terendah['unpkpd']
+    kab_tertinggi['kabkot'], kab_tertinggi['unpkpd'],
+    kab_terendah['kabkot'], kab_terendah['unpkpd']
 ), unsafe_allow_html=True)
 
 # --- PETA ---
@@ -107,7 +107,7 @@ for _, row in gdf.iterrows():
             'weight': 0.5,
             'fillOpacity': 0.6
         },
-        tooltip=folium.Tooltip(f"{row['name_kabkot']}: {row['unpkpd']}%")
+        tooltip=folium.Tooltip(f"{row['kabkot']}: {row['unpkpd']}%")
     ).add_to(m)
 
 st.markdown("## Peta Interaktif")
