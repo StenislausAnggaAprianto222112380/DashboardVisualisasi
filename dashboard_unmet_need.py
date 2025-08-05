@@ -36,51 +36,59 @@ color_dict = {
 st.markdown("<h1 style='text-align: center;'>UNPK PD Pelayanan Kesehatan Penyandang Disabilitas di Pulau Jawa Tahun 2023</h1>", unsafe_allow_html=True)
 
 # --- STATISTIK ---
-col1, col2, col3, col4 = st.columns(4)
+# --- Gaya Hover dan Card ---
+st.markdown("""
+    <style>
+    .card:hover {
+        transform: scale(1.03);
+        box-shadow: 0px 0px 15px rgba(0,0,0,0.2);
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# --- Kolom Statistik ---
+col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     st.markdown("""
-        <div class='card hover-card'>
-            <h2>UNPK PD</h2>
-            <h1>22.8%</h1>
-            <p>Penyandang disabilitas yang kebutuhannya belum terpenuhi</p>
-        </div>
+    <div class="card" style="background-color:#e74c3c;padding:20px;border-radius:10px;text-align:center;color:white">
+        <h4>UNPK PD</h4>
+        <h1>22.8%</h1>
+    </div>
     """, unsafe_allow_html=True)
 
 with col2:
-    kategori_count = gdf["cat_unpk"].value_counts()
-    total_kab = kategori_count.sum()
     st.markdown(f"""
-        <div class='card hover-card'>
-            <h2>Sebaran Wilayah</h2>
-            <p>Sangat Tinggi: {kategori_count.get('Sangat Tinggi', 0)} kab / {kategori_count.get('Sangat Tinggi', 0)/total_kab:.0%}</p>
-            <p>Tinggi: {kategori_count.get('Tinggi', 0)} kab / {kategori_count.get('Tinggi', 0)/total_kab:.0%}</p>
-            <p>Sedang: {kategori_count.get('Sedang', 0)} kab / {kategori_count.get('Sedang', 0)/total_kab:.0%}</p>
-            <p>Rendah: {kategori_count.get('Rendah', 0)} kab / {kategori_count.get('Rendah', 0)/total_kab:.0%}</p>
-            <p>Sangat Rendah: {kategori_count.get('Sangat Rendah', 0)} kab / {kategori_count.get('Sangat Rendah', 0)/total_kab:.0%}</p>
-        </div>
+    <div class="card" style="background-color:#c0392b;padding:20px;border-radius:10px;text-align:center;color:white">
+        <h4>Sangat Tinggi</h4>
+        <h1>{jumlah_st}</h1>
+    </div>
     """, unsafe_allow_html=True)
 
 with col3:
-    max_row = gdf.loc[gdf["unpkpd"].idxmax()]
     st.markdown(f"""
-        <div class='card hover-card'>
-            <h2>Kabupaten Tertinggi</h2>
-            <h1>{max_row["unpkpd"]:.1f}%</h1>
-            <p>{max_row["name_kabkot"]}</p>
-        </div>
+    <div class="card" style="background-color:#27ae60;padding:20px;border-radius:10px;text-align:center;color:white">
+        <h4>Sangat Rendah</h4>
+        <h1>{jumlah_sr}</h1>
+    </div>
     """, unsafe_allow_html=True)
 
 with col4:
-    min_row = gdf.loc[gdf["unpkpd"].idxmin()]
     st.markdown(f"""
-        <div class='card hover-card'>
-            <h2>Kabupaten Terendah</h2>
-            <h1>{min_row["unpkpd"]:.1f}%</h1>
-            <p>{min_row["name_kabkot"]}</p>
-        </div>
+    <div class="card" style="background-color:#2980b9;padding:20px;border-radius:10px;text-align:center;color:white">
+        <h4>Kab. Tertinggi</h4>
+        <h1>{kab_tertinggi}<br>{unpk_tertinggi:.1f}%</h1>
+    </div>
     """, unsafe_allow_html=True)
 
+with col5:
+    st.markdown(f"""
+    <div class="card" style="background-color:#8e44ad;padding:20px;border-radius:10px;text-align:center;color:white">
+        <h4>Kab. Terendah</h4>
+        <h1>{kab_terendah}<br>{unpk_terendah:.1f}%</h1>
+    </div>
+    """, unsafe_allow_html=True)
+    
 # --- PILIHAN FILTRASI ---
 col_kat, col_prov = st.columns(2)
 kategori_opsi = ["Semua"] + list(gdf["cat_unpk"].dropna().unique())
