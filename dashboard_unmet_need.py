@@ -188,7 +188,7 @@ else:
     </div>
     """
 
-m.get_root().html.add_child(folium.Element(legend_html))
+    m.get_root().html.add_child(folium.Element(legend_html))
 
 
     st.markdown("### Peta Interaktif")
