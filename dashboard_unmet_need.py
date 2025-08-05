@@ -47,7 +47,7 @@ color_dict = {
     "Rendah": "#fef9b0",         # Kuning
     "Sedang": "#fdae61",         # Orange
     "Tinggi": "#f46d43",         # Merah
-    "Sangat Tinggi": "#a50026"   # Merah bata
+    "Sangat Tinggi": "#980043"   # Merah bata
 }
 
 # --- HEADER ---
