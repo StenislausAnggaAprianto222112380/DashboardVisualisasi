@@ -32,6 +32,14 @@ color_dict = {
     "Sangat Tinggi": "#8b0000",
 }
 
+st.markdown("""
+<div style="text-align: center;">
+    <img src="https://www.freepik.com/free-photo/medical-banner-with-doctor-patient_30555910.htm#fromView=search&page=1&position=15&uuid=7924613f-397d-435a-ba38-7778c44c2dd3&query=healthcare" alt="Disabilitas" width="600"/>
+    <p style="font-size: 13px; color: grey;">Sumber gambar: Freepik.com</p>
+</div>
+""", unsafe_allow_html=True)
+
+
 # --- HEADER ---
 st.markdown("<h1 style='text-align: center;'>Dashboard Unmet Need Pelayanan Kesehatan pada Penyandang Disabilitas di Pulau Jawa Tahun 2023</h1>", unsafe_allow_html=True)
 
