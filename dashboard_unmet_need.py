@@ -195,11 +195,11 @@ else:
 
     geojson_layer.add_to(m)
 
-    # --- LEGEND HTML ---
+    #LEGGENDA
     legend_html = """
     <div style="
         position: fixed; 
-        bottom: 40px; left: 40px; width: 200px; 
+        bottom: 40px; left: 40px; width: 260px; 
         background-color: white;
         border:2px solid grey; 
         z-index:9999; 
@@ -208,13 +208,14 @@ else:
         border-radius: 5px;
         box-shadow: 2px 2px 5px rgba(0,0,0,0.3);">
         <b>Legenda Kategori UNPKPD</b><br>
-        <i style="background:#b7f7a5;width:18px;height:18px;float:left;margin-right:8px;"></i>Sangat Rendah [2.37%-7.38%]<br>
-        <i style="background:#f7f79c;width:18px;height:18px;float:left;margin-right:8px;"></i>Rendah        [7.38%-12.39%]<br>
-        <i style="background:#fca15e;width:18px;height:18px;float:left;margin-right:8px;"></i>Sedang        [12.39%-17.39%]<br>
-        <i style="background:#f75d59;width:18px;height:18px;float:left;margin-right:8px;"></i>Tinggi        [17.39%-22.40%]<br>
-        <i style="background:#8b0000;width:18px;height:18px;float:left;margin-right:8px;"></i>Sangat Tinggi [22.40%-27.41%]
+        <div><i style="background:#b7f7a5;width:18px;height:18px;float:left;margin-right:8px;"></i><span style="display:inline-block; width:130px;">Sangat Rendah</span><span>[2.37%-7.38%]</span></div>
+        <div><i style="background:#f7f79c;width:18px;height:18px;float:left;margin-right:8px;"></i><span style="display:inline-block; width:130px;">Rendah</span><span>[7.38%-12.39%]</span></div>
+        <div><i style="background:#fca15e;width:18px;height:18px;float:left;margin-right:8px;"></i><span style="display:inline-block; width:130px;">Sedang</span><span>[12.39%-17.39%]</span></div>
+        <div><i style="background:#f75d59;width:18px;height:18px;float:left;margin-right:8px;"></i><span style="display:inline-block; width:130px;">Tinggi</span><span>[17.39%-22.40%]</span></div>
+        <div><i style="background:#8b0000;width:18px;height:18px;float:left;margin-right:8px;"></i><span style="display:inline-block; width:130px;">Sangat Tinggi</span><span>[22.40%-27.41%]</span></div>
     </div>
     """
+
 
     m.get_root().html.add_child(folium.Element(legend_html))
 
