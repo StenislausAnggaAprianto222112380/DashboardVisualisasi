@@ -70,117 +70,53 @@ kategori_display = "<br>".join([f"{k}: {v}" for k, v in kategori_counts.items()]
 kab_tertinggi = gdf.loc[gdf["unpkpd"].idxmax()]
 kab_terendah = gdf.loc[gdf["unpkpd"].idxmin()]
 
-# # --- 4 KOLOM KARTU SAJA ---
-# col1, col2, col3, col4 = st.columns(4)
-
-# with col1:
-#     st.markdown("""
-#     <div class="card" style="background-color:#c0392b;padding:20px;border-radius:10px;text-align:center;color:white">
-#         <h4>UNPK PD Nasional</h4>
-#         <h1>13.85%</h1>
-#         <p>Angka Nasional UNPK PD sebesar 13.85%</p>
-#     </div>
-#     """, unsafe_allow_html=True)
-
-# with col2:
-#     st.markdown(f"""
-#     <div class="card" style="background-color:#d35400;padding:20px;border-radius:10px;text-align:center;color:white">
-#         <h4>Sebaran Wilayah</h4>
-#         <h1 style="margin-bottom: 0;">{len(kategori_counts)} Kategori</h1>
-#         <p style="margin-top: 0; line-height:1.2;">{kategori_display}</p>
-#     </div>
-#     """, unsafe_allow_html=True)
-    
-# with col3:
-#     st.markdown(f"""
-#     <div class="card" style="background-color:#16a085;padding:20px;border-radius:10px;text-align:center;color:white">
-#         <h4>Kabupaten Tertinggi</h4>
-#         <h1>{kab_tertinggi['unpkpd']:.2f}%</h1>
-#         <p>{kab_tertinggi['name_kabkot']}</p>
-#     </div>
-#     """, unsafe_allow_html=True)
-
-# with col4:
-#     st.markdown(f"""
-#     <div class="card" style="background-color:#2980b9;padding:20px;border-radius:10px;text-align:center;color:white">
-#         <h4>Kabupaten Terendah</h4>
-#         <h1>{kab_terendah['unpkpd']:.2f}%</h1>
-#         <p>{kab_terendah['name_kabkot']}</p>
-#     </div>
-#     """, unsafe_allow_html=True)
-
-# --- STYLE KOTAK BORDER KARTU ---
+# BUKA KONTENER LUAR DENGAN BACKGROUND HIJAU MUDA
 st.markdown("""
-    <div style="border: 3px solid #DBE4C9; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
-        <h3 style="color: black; margin-top: 0;">Statistik UNPK PD</h3>
+<div style="background-color:#DBE4C9;padding:30px;border-radius:15px;margin-bottom:20px">
+    <h2 style="text-align:center;margin-top:0;margin-bottom:30px;">Statistik UNPKPD</h2>
 """, unsafe_allow_html=True)
 
-# --- KARTU 1 & 2 ---
-col1, col2 = st.columns(2)
+# --- 4 KOLOM KARTU SAJA ---
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    with st.container():
-        st.markdown(
-            f"""
-            <div style="background-color:#4B8BBE; padding:20px; border-radius:12px; color:white; text-align:center;">
-                <h2 style="margin:0; font-size:28px; font-weight:bold;">13.85%</h2>
-                <p style="margin:5px 0 0 0;">Angka Nasional UNPK PD</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    st.markdown("""
+    <div class="card" style="background-color:#c0392b;padding:20px;border-radius:10px;text-align:center;color:white">
+        <h4>UNPK PD Nasional</h4>
+        <h1>13.85%</h1>
+        <p>Angka Nasional UNPK PD sebesar 13.85%</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col2:
-    with st.container():
-        st.markdown(
-            f"""
-            <div style="background-color:#306998; padding:20px; border-radius:12px; color:white;">
-                <h4 style="margin:0 0 5px 0; font-size:16px;">Sebaran Wilayah</h4>
-                <p style="margin:0; line-height:1.3; font-size:14px;">
-                5 Kategori<br>
-                Sangat Rendah: {jumlah_kategori.get("Sangat Rendah", 0)}<br>
-                Rendah: {jumlah_kategori.get("Rendah", 0)}<br>
-                Sedang: {jumlah_kategori.get("Sedang", 0)}<br>
-                Tinggi: {jumlah_kategori.get("Tinggi", 0)}<br>
-                Sangat Tinggi: {jumlah_kategori.get("Sangat Tinggi", 0)}
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-# --- KARTU 3 & 4 ---
-col3, col4 = st.columns(2)
-
+    st.markdown(f"""
+    <div class="card" style="background-color:#d35400;padding:20px;border-radius:10px;text-align:center;color:white">
+        <h4>Sebaran Wilayah</h4>
+        <h1 style="margin-bottom: 0;">{len(kategori_counts)} Kategori</h1>
+        <p style="margin-top: 0; line-height:1.2;">{kategori_display}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
 with col3:
-    with st.container():
-        st.markdown(
-            f"""
-            <div style="background-color:#FFA07A; padding:20px; border-radius:12px; color:white; text-align:center;">
-                <h4 style="margin:0 0 5px 0;">Kabupaten Tertinggi</h4>
-                <h3 style="margin:0; font-size:26px; font-weight:bold;">{kabupaten_tertinggi["unpkpd"]:.2f}%</h3>
-                <p style="margin:5px 0 0 0;">{kabupaten_tertinggi["name_kabkot"]}</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    st.markdown(f"""
+    <div class="card" style="background-color:#16a085;padding:20px;border-radius:10px;text-align:center;color:white">
+        <h4>Kabupaten Tertinggi</h4>
+        <h1>{kab_tertinggi['unpkpd']:.2f}%</h1>
+        <p>{kab_tertinggi['name_kabkot']}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col4:
-    with st.container():
-        st.markdown(
-            f"""
-            <div style="background-color:#CD5C5C; padding:20px; border-radius:12px; color:white; text-align:center;">
-                <h4 style="margin:0 0 5px 0;">Kabupaten Terendah</h4>
-                <h3 style="margin:0; font-size:26px; font-weight:bold;">{kabupaten_terendah["unpkpd"]:.2f}%</h3>
-                <p style="margin:5px 0 0 0;">{kabupaten_terendah["name_kabkot"]}</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    st.markdown(f"""
+    <div class="card" style="background-color:#2980b9;padding:20px;border-radius:10px;text-align:center;color:white">
+        <h4>Kabupaten Terendah</h4>
+        <h1>{kab_terendah['unpkpd']:.2f}%</h1>
+        <p>{kab_terendah['name_kabkot']}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-# --- TUTUP DIV BORDER ---
+# TUTUP KONTENER LUAR
 st.markdown("</div>", unsafe_allow_html=True)
-
 
 # --- PILIHAN FILTRASI ---
 col_kat, col_prov = st.columns(2)
