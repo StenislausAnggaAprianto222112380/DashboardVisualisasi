@@ -35,6 +35,22 @@ color_dict = {
 # --- HEADER ---
 st.markdown("<h1 style='text-align: center;'>Dashboard Unmet Need Pelayanan Kesehatan pada Penyandang Disabilitas di Pulau Jawa Tahun 2023</h1>", unsafe_allow_html=True)
 
+st.markdown("""
+<div style="text-align: justify; max-width: 1000px; margin: auto; font-size:16px;">
+    <p>
+        <b>Unmet need pelayanan kesehatan</b> menunjukkan persentase penduduk yang seharusnya berobat ketika sakit dan terganggu aktivitasnya 
+        tetapi tidak melakukan pengobatan karena disebabkan oleh beberapa hal, seperti kurangnya dana untuk melakukan pengobatan, 
+        kurangnya dana untuk transportasi, tidak terdapat sarana transportasi yang memadai, atau waktu tunggu pelayanan kesehatan yang lama. 
+        (<i>BPS, 2023</i>).
+    </p>
+    <p>
+        <b>Unmet Need Pelayanan Kesehatan pada Penyandang Disabilitas (UNPK PD)</b> adalah hasil disagregasi dari kejadian unmet need pelayanan kesehatan 
+        menjadi subpopulasi disabilitas (<i>Bappenas, 2020</i>).
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+
 # --- STATISTIK ---
 st.markdown("""
     <style>
