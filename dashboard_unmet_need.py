@@ -90,7 +90,7 @@ with col2:
         <p style='line-height:1.5'>{kategori_display}</p>
     </div>
     """, unsafe_allow_html=True)
-
+    
 with col3:
     st.markdown(f"""
     <div class="card" style="background-color:#16a085;padding:20px;border-radius:10px;text-align:center;color:white">
