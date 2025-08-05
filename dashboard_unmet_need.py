@@ -3,9 +3,12 @@ import pandas as pd
 import geopandas as gpd
 import folium
 from streamlit_folium import st_folium
-from branca.colormap import linear
+from folium.features import GeoJsonTooltip
 
-# ================== LOAD DATA ==================
+# --- CONFIG PAGE ---
+st.set_page_config(layout="wide", page_title="Unmet Need Disabilitas 2023 Jawa", page_icon="📊")
+
+# --- LOAD DATA ---
 @st.cache_data
 
 def load_data():
@@ -15,76 +18,65 @@ def load_data():
 
 df, gdf = load_data()
 
-# ================== DATA PREP ==================
-# Pastikan kolom id join memiliki tipe yang sama
-df["kabkot"] = df["kabkot"].astype(str)
-gdf["IDKAB"] = gdf["IDKAB"].astype(str)
+# --- PERSIAPAN DATA ---
+gdf["IDKAB"] = gdf["IDKAB"].astype(int)
+df["kabkot"] = df["kabkot"].astype(int)
+merged = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
 
-# Gabungkan data excel ke shapefile berdasarkan kabkot dan IDKAB
-gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
-
-# ================== SIDEBAR ==================
-st.sidebar.title("Dashboard Unmet Need Disabilitas 2023")
-st.sidebar.markdown("Pulau Jawa | Sumber: BPS 2023")
-
-# ================== TITLE ==================
+# --- JUDUL ---
+st.title("📊 Visualisasi Unmet Need Disabilitas 2023 di Pulau Jawa")
 st.markdown("""
-    <h2 style='text-align: center; color: black;'>Dashboard Unmet Need KB Penyandang Disabilitas</h2>
-    <h4 style='text-align: center; color: black;'>Provinsi di Pulau Jawa - 2023</h4>
-""", unsafe_allow_html=True)
-
-# ================== METRIC KABKOT TERTINGGI ==================
-# Dapatkan kabupaten dengan unmet need tertinggi
-max_row = df.loc[df['unpkpd'].idxmax()]
-st.markdown("""
-<div style='background-color: #F9893E; padding: 15px; border-radius: 10px; color: white;'>
-    <h4 style='margin: 0;'>Kabupaten/Kota dengan Unmet Need Tertinggi:</h4>
-    <h2 style='margin: 0;'>{}</h2>
-    <p style='margin: 0;'>Unmet Need: {:.2f}%</p>
-</div>
-""".format(max_row['name_kabkot'], max_row['unpkpd']), unsafe_allow_html=True)
-
-st.markdown("---")
-
-# ================== FOLIUM MAP ==================
-# Setup color scale
-colormap = linear.YlOrRd_09.scale(df.unpkpd.min(), df.unpkpd.max())
-colormap.caption = 'Persentase Unmet Need (%)'
-
-# Membuat peta
-m = folium.Map(location=[-7.5, 110.5], zoom_start=7, tiles="CartoDB positron")
-
-# Menambahkan layer choropleth
-folium.GeoJson(
-    gdf,
-    style_function=lambda feature: {
-        'fillColor': colormap(feature['properties']['unpkpd']) if feature['properties']['unpkpd'] is not None else 'gray',
-        'color': 'black',
-        'weight': 0.5,
-        'dashArray': '5, 5',
-        'fillOpacity': 0.7,
-    },
-    tooltip=folium.GeoJsonTooltip(
-        fields=['name_kabkot', 'unpkpd', 'cat_unpk'],
-        aliases=['Kab/Kota', 'Unmet Need (%)', 'Kategori'],
-        localize=True
-    )
-).add_to(m)
-
-colormap.add_to(m)
-
-# Tampilkan peta di streamlit
-st_data = st_folium(m, width=700, height=500)
-
-# ================== TABEL ==================
-st.markdown("## Tabel Data Unmet Need")
-st.dataframe(df[["name_kabkot", "unpkpd", "rse", "cat_unpk", "cat_rse"]].sort_values(by="unpkpd", ascending=False), use_container_width=True)
-
-# ================== CATATAN ==================
-st.markdown("""
-### Catatan:
-- **Unmet Need**: Persentase kebutuhan ber-KB yang tidak terpenuhi.
-- **RSE**: Relative Standard Error.
-- Kategori RSE digunakan untuk menilai ketepatan estimasi.
-- Data ini diambil dari hasil Survei Sosial Ekonomi Nasional (Susenas) tahun 2023.
+Dashboard ini menyajikan visualisasi data *Unmet Need Kebutuhan Pelayanan Disabilitas* tahun 2023 untuk wilayah kabupaten/kota di Pulau Jawa.
 """)
+
+# --- STATISTIK: KABUPATEN TERTINGGI ---
+highest_row = merged.loc[merged['unpkpd'].idxmax()]
+col1, col2 = st.columns([3, 1])
+with col1:
+    st.subheader("Kabupaten/Kota dengan Unmet Need Tertinggi")
+    st.markdown(f"### {highest_row['name_kabkot']}")
+    st.markdown(f"**Unmet Need:** {highest_row['unpkpd']:.2f}%")
+    st.markdown(f"**RSE:** {highest_row['rse']:.2f}%")
+    st.markdown(f"**Kategori:** {highest_row['cat_unpk']}")
+with col2:
+    st.metric("Unmet Need Tertinggi", f"{highest_row['unpkpd']:.2f}%")
+
+# --- PETA CHOROPLETH ---
+st.subheader("Peta Sebaran Unmet Need Disabilitas (2023)")
+
+# Peta dasar
+m = folium.Map(location=[-7.5, 110.5], zoom_start=7, tiles="cartodbpositron")
+
+# Warna dinamis berdasarkan kategori
+def get_color(category):
+    if category == "Sangat Tinggi": return "#D7191C"
+    elif category == "Tinggi": return "#FDAE61"
+    elif category == "Sedang": return "#FFFFBF"
+    elif category == "Rendah": return "#A6D96A"
+    else: return "#1A9641"
+
+# Tambahkan poligon dan tooltip
+for _, row in merged.iterrows():
+    geo = folium.GeoJson(
+        row["geometry"].__geo_interface__,
+        style_function=lambda x, color=get_color(row['cat_unpk']): {
+            'fillColor': color,
+            'color': 'black',
+            'weight': 1,
+            'fillOpacity': 0.7,
+        },
+        tooltip=folium.Tooltip(
+            f"<b>{row['name_kabkot']}</b><br/>"
+            f"Unmet Need: {row['unpkpd']:.2f}%<br/>"
+            f"RSE: {row['rse']:.2f}%<br/>"
+            f"Kategori: {row['cat_unpk']}"
+        )
+    )
+    geo.add_to(m)
+
+# Tampilkan peta
+st_folium(m, width=1000, height=600)
+
+# --- FOOTER ---
+st.markdown("---")
+st.caption("Sumber data: BPS 2023, diolah | Dashboard dibuat dengan ❤️ oleh Sten. 💻")
