@@ -61,7 +61,7 @@ st.markdown("""
 
 # --- HITUNG NILAI UNTUK STATISTIK KARTU ---
 jumlah_kategori = gdf["cat_unpk"].nunique()
-kategori_counts = gdf["cat_unpk"].value_counts().to_dict()
+kategori_counts = gdf["cat_unpk"].value_counts().reindex(["Sangat Rendah", "Rendah", "Sedang", "Tinggi", "Sangat Tinggi"]).dropna().astype(int).to_dict()
 kategori_display = "<br>".join([f"{k}: {v}" for k, v in kategori_counts.items()])
 
 kab_tertinggi = gdf.loc[gdf["unpkpd"].idxmax()]
