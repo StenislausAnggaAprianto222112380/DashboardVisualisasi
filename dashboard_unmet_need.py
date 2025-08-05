@@ -42,17 +42,9 @@ st.markdown("""
         transform: scale(1.03);
         box-shadow: 0px 0px 15px rgba(0,0,0,0.2);
     }
-    .card h4 {
-        font-size: 20px;
-        margin-bottom: 10px;
-    }
-    .card h1 {
-        font-size: 36px;
-        margin: 10px 0;
-    }
-    .card p {
-        font-size: 16px;
-        margin: 0;
+    .card h4, .card h1, .card p {
+        font-size: 18px;
+        margin: 5px 0;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -79,7 +71,7 @@ with col1:
 
 with col2:
     st.markdown(f"""
-    <div class="card" style="background-color:#c0392b;padding:20px;border-radius:10px;text-align:center;color:white">
+    <div class="card" style="background-color:#f39c12;padding:20px;border-radius:10px;text-align:center;color:white">
         <h4>Sebaran Wilayah</h4>
         <h1>{len(kategori_counts)} Kategori</h1>
         <p>{kategori_display}</p>
@@ -88,18 +80,18 @@ with col2:
 
 with col3:
     st.markdown(f"""
-    <div class="card" style="background-color:#2980b9;padding:20px;border-radius:10px;text-align:center;color:white">
+    <div class="card" style="background-color:#27ae60;padding:20px;border-radius:10px;text-align:center;color:white">
         <h4>Kabupaten Tertinggi</h4>
-        <h1 style='font-size:28px'>{kab_tertinggi['name_kabkot']}</h1>
+        <h1>{kab_tertinggi['name_kabkot']}</h1>
         <p>{kab_tertinggi['unpkpd']:.2f}% - {kab_tertinggi['PROVINSI']}</p>
     </div>
     """, unsafe_allow_html=True)
 
 with col4:
     st.markdown(f"""
-    <div class="card" style="background-color:#8e44ad;padding:20px;border-radius:10px;text-align:center;color:white">
+    <div class="card" style="background-color:#2980b9;padding:20px;border-radius:10px;text-align:center;color:white">
         <h4>Kabupaten Terendah</h4>
-        <h1 style='font-size:28px'>{kab_terendah['name_kabkot']}</h1>
+        <h1>{kab_terendah['name_kabkot']}</h1>
         <p>{kab_terendah['unpkpd']:.2f}% - {kab_terendah['PROVINSI']}</p>
     </div>
     """, unsafe_allow_html=True)
