@@ -50,7 +50,7 @@ with col1:
     <div style="background-color:#EDF8F4;padding:20px;border-radius:12px;">
         <h4 style="margin:0;">Unmet Need</h4>
         <h1 style="color:#0F3D28;">{mean_val:.1f}%</h1>
-        <p style="font-size:14px;margin:0;">Penyandang disabilitas dengan kebutuhan layanan kesehatan yang tidak terpenuhi</p>
+        <p style="font-size:14px;margin:0;">Rata-rata kebutuhan layanan kesehatan yang tidak terpenuhi</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -58,12 +58,14 @@ with col2:
     tinggi = df[df["cat_unpk"] == "Tinggi"].shape[0]
     sedang = df[df["cat_unpk"] == "Sedang"].shape[0]
     rendah = df[df["cat_unpk"] == "Rendah"].shape[0]
+    sangat_tinggi = df[df["cat_unpk"] == "Sangat Tinggi"].shape[0] if "Sangat Tinggi" in df["cat_unpk"].unique() else 0
     st.markdown(f"""
     <div style="background-color:#F4F6F8;padding:20px;border-radius:12px;">
         <h4 style="margin:0;">Sebaran Wilayah</h4>
-        <p>Tinggi: <b>{tinggi}</b></p>
-        <p>Sedang: <b>{sedang}</b></p>
-        <p>Rendah: <b>{rendah}</b></p>
+        <p style="margin:0;">Sangat Tinggi: <b>{sangat_tinggi}</b></p>
+        <p style="margin:0;">Tinggi: <b>{tinggi}</b></p>
+        <p style="margin:0;">Sedang: <b>{sedang}</b></p>
+        <p style="margin:0;">Rendah: <b>{rendah}</b></p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -73,10 +75,13 @@ with col3:
     <div style="background-color:#FFF3E0;padding:20px;border-radius:12px;">
         <h4 style="margin:0;">Kabupaten/Kota Tertinggi</h4>
     """, unsafe_allow_html=True)
+    
     for _, row in top3.iterrows():
         st.markdown(
-            f"<p style='margin:4px 0;'><b>{row['name_kabkot']}</b>: <span style='color:#F9893E;'>{row['unpkpd']:.1f}%</span></p>",
+            f"<p style='margin:4px 0;'><b>{row['name_kabkot']}</b>: "
+            f"<span style='color:#F9893E;'>{row['unpkpd']:.1f}%</span></p>",
             unsafe_allow_html=True)
+    
     st.markdown("</div>", unsafe_allow_html=True)
 
 with col4:
