@@ -111,7 +111,9 @@ with col4:
 
 # --- PILIHAN FILTRASI ---
 col_kat, col_prov = st.columns(2)
-kategori_opsi = ["Semua"] + list(gdf["cat_unpk"].dropna().unique())
+ordered_kategori = ["Sangat Rendah", "Rendah", "Sedang", "Tinggi", "Sangat Tinggi"]
+kategori_opsi = ["Semua"] + [k for k in ordered_kategori if k in gdf["cat_unpk"].unique()]
+
 prov_opsi = ["Semua"] + sorted(gdf["cat_rse"].dropna().unique())
 
 with col_kat:
