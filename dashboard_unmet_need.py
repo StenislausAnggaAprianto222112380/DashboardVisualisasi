@@ -109,10 +109,9 @@ kab_terendah = gdf.loc[gdf["unpkpd"].idxmin()]
 #     </div>
 #     """, unsafe_allow_html=True)
 
-# --- KONTAINER PEMBUNGKUS 4 KARTU ---
+# --- PEMBUNGKUS KONTENER 4 KARTU ---
 st.markdown("""
-<div style="background-color:#DBE4C9;padding:50px 40px;border-radius:30px;margin-bottom:40px;">
-    <h2 style="text-align:left;color:#1e3932;margin-top:0;margin-bottom:30px">Statistik UNPKPD</h2>
+<div style="background-color:#ecf0f1;padding:25px 10px 5px 10px;border-radius:20px;margin-top:20px;margin-bottom:20px">
 """, unsafe_allow_html=True)
 
 # --- 4 KOLOM KARTU SAJA ---
