@@ -129,37 +129,41 @@ if selected_kategori != "Semua":
 if selected_prov != "Semua":
     filtered_gdf = filtered_gdf[filtered_gdf["cat_rse"] == selected_prov]
 
-# --- PETA FOLIUM ---
-m = folium.Map(location=[-7.5, 110.5], zoom_start=7, tiles="cartodbpositron")
+# --- CEK DATA HASIL FILTER ---
+if filtered_gdf.empty:
+    st.warning("Tidak ada kategori yang anda minta!")
+else:
+    # --- PETA FOLIUM ---
+    m = folium.Map(location=[-7.5, 110.5], zoom_start=7, tiles="cartodbpositron")
 
-geojson_data = json.loads(filtered_gdf.to_json())
+    geojson_data = json.loads(filtered_gdf.to_json())
 
-def style_function(feature):
-    kategori = feature["properties"].get("cat_unpk")
-    color = color_dict.get(kategori, "#d3d3d3")
-    return {
-        "fillColor": color,
-        "color": "black",
-        "weight": 1,
-        "fillOpacity": 0.7,
-    }
+    def style_function(feature):
+        kategori = feature["properties"].get("cat_unpk")
+        color = color_dict.get(kategori, "#d3d3d3")
+        return {
+            "fillColor": color,
+            "color": "black",
+            "weight": 1,
+            "fillOpacity": 0.7,
+        }
 
-def highlight_function(feature):
-    return {"weight": 3, "color": "black"}
+    def highlight_function(feature):
+        return {"weight": 3, "color": "black"}
 
-geojson_layer = folium.GeoJson(
-    geojson_data,
-    style_function=style_function,
-    highlight_function=highlight_function,
-    tooltip=folium.GeoJsonTooltip(
-        fields=["name_kabkot", "unpkpd", "cat_unpk", "cat_rse"],
-        aliases=["Kabupaten/Kota:", "UNPKPD (%):", "Kategori UNPKPD:", "Kategori Data:"],
-        sticky=True,
-        labels=True
+    geojson_layer = folium.GeoJson(
+        geojson_data,
+        style_function=style_function,
+        highlight_function=highlight_function,
+        tooltip=folium.GeoJsonTooltip(
+            fields=["name_kabkot", "unpkpd", "cat_unpk", "cat_rse"],
+            aliases=["Kabupaten/Kota:", "UNPKPD (%):", "Kategori UNPKPD:", "Kategori Data:"],
+            sticky=True,
+            labels=True
+        )
     )
-)
 
-geojson_layer.add_to(m)
+    geojson_layer.add_to(m)
 
-st.markdown("### Peta Interaktif")
-st_folium(m, width=1200, height=600)
+    st.markdown("### Peta Interaktif")
+    st_folium(m, width=1200, height=600)
