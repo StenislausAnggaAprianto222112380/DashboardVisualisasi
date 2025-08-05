@@ -109,52 +109,33 @@ kab_terendah = gdf.loc[gdf["unpkpd"].idxmin()]
 #     </div>
 #     """, unsafe_allow_html=True)
 
-# --- PEMBUNGKUS KONTENER 4 KARTU ---
-st.markdown("""
-<div style="background-color:#ecf0f1;padding:25px 10px 5px 10px;border-radius:20px;margin-top:20px;margin-bottom:20px">
-""", unsafe_allow_html=True)
-
-# --- 4 KOLOM KARTU SAJA ---
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    st.markdown("""
-    <div class="card" style="background-color:#c0392b;padding:20px;border-radius:10px;text-align:center;color:white">
+st.markdown(f"""
+<div style="background-color:#ecf0f1;padding:25px 20px 20px 20px;border-radius:20px;margin-top:20px;margin-bottom:20px;display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+    <div class="card" style="background-color:#c0392b;padding:20px;border-radius:10px;text-align:center;">
         <h4>UNPK PD Nasional</h4>
         <h1>13.85%</h1>
         <p>Angka Nasional UNPK PD sebesar 13.85%</p>
     </div>
-    """, unsafe_allow_html=True)
 
-with col2:
-    st.markdown(f"""
-    <div class="card" style="background-color:#d35400;padding:20px;border-radius:10px;text-align:center;color:white">
+    <div class="card" style="background-color:#d35400;padding:20px;border-radius:10px;text-align:center;">
         <h4>Sebaran Wilayah</h4>
         <h1 style="margin-bottom: 0;">{len(kategori_counts)} Kategori</h1>
         <p style="margin-top: 0; line-height:1.2;">{kategori_display}</p>
     </div>
-    """, unsafe_allow_html=True)
-    
-with col3:
-    st.markdown(f"""
-    <div class="card" style="background-color:#16a085;padding:20px;border-radius:10px;text-align:center;color:white">
+
+    <div class="card" style="background-color:#16a085;padding:20px;border-radius:10px;text-align:center;">
         <h4>Kabupaten Tertinggi</h4>
         <h1>{kab_tertinggi['unpkpd']:.2f}%</h1>
         <p>{kab_tertinggi['name_kabkot']}</p>
     </div>
-    """, unsafe_allow_html=True)
 
-with col4:
-    st.markdown(f"""
-    <div class="card" style="background-color:#2980b9;padding:20px;border-radius:10px;text-align:center;color:white">
+    <div class="card" style="background-color:#2980b9;padding:20px;border-radius:10px;text-align:center;">
         <h4>Kabupaten Terendah</h4>
         <h1>{kab_terendah['unpkpd']:.2f}%</h1>
         <p>{kab_terendah['name_kabkot']}</p>
     </div>
-    """, unsafe_allow_html=True)
-
-# --- TUTUP DIV PEMBUNGKUS ---
-st.markdown("</div>", unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)
 
 
 # --- PILIHAN FILTRASI ---
