@@ -86,6 +86,8 @@ kategori_display = "<br>".join([f"{k}: {v}" for k, v in kategori_counts.items()]
 kab_tertinggi = gdf.loc[gdf["unpkpd"].idxmax()]
 kab_terendah = gdf.loc[gdf["unpkpd"].idxmin()]
 
+st.markdown("## Statistik UNPKPD")
+
 # --- 4 KOLOM KARTU SAJA ---
 col1, col2, col3, col4 = st.columns(4)
 
