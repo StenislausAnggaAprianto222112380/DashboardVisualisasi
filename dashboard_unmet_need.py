@@ -3,11 +3,12 @@ import pandas as pd
 import geopandas as gpd
 import folium
 from streamlit_folium import st_folium
+from folium.features import GeoJsonTooltip
 
 # --- SETUP HALAMAN ---
 st.set_page_config(page_title="Unmet Need Disabilitas 2023", layout="wide")
 
-# --- HEADER ---
+# --- HEADER STYLE ---
 st.markdown("""
     <style>
     html, body, [class*="css"] {
@@ -54,14 +55,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# --- HEADER ---
 st.markdown("<div class='big-title'>Unmet Need Pelayanan Kesehatan pada Penyandang Disabilitas di Pulau Jawa Tahun 2023</div>", unsafe_allow_html=True)
 
 st.markdown("<p class='subtext'>Unmet need pelayanan kesehatan pada penyandang disabilitas merupakan proporsi penyandang disabilitas yang merasa sakit dalam 1 tahun terakhir namun tidak mendapatkan pelayanan yang dibutuhkan (BPS).</p>", unsafe_allow_html=True)
 
-# --- DATA ---
+# --- LOAD DATA ---
 df = pd.read_excel("DatasetVisualisasi.xlsx")
 
-# --- Statistik ---
+# --- HITUNG STATISTIK ---
 rata2_unmet = df['unpkpd'].mean()
 kab_tertinggi = df.loc[df['unpkpd'].idxmax()]
 kab_terendah = df.loc[df['unpkpd'].idxmin()]
@@ -74,63 +76,49 @@ summary = {
     'sangat rendah': df[df['cat_unpk'] == 'Sangat Rendah'].shape[0]
 }
 
-# --- STATISTIK KARTU ---
-st.markdown("""
+# --- TAMPILKAN KARTU STATISTIK ---
+st.markdown(f"""
 <div style='display: flex; flex-wrap: wrap; gap: 1.25rem;'>
 
     <div class='card' style='background-color: #E6F4EA;'>
         <div class='card-title'>Unmet Need</div>
-        <div class='card-value'>{:.1f}%</div>
+        <div class='card-value'>{rata2_unmet:.1f}%</div>
         <div class='card-subtext'>Rata-rata unmet need di Pulau Jawa</div>
     </div>
 
     <div class='card' style='background-color: #F3F7FA; flex: 2;'>
         <div class='card-title'>Sebaran Wilayah</div>
         <div class='card-value' style='font-size: 18px; font-weight: 600; color: #1B4332;'>
-            Sangat Tinggi: {sangat_tinggi} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-            Tinggi: {tinggi} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-            Sedang: {sedang} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-            Rendah: {rendah} &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-            Sangat Rendah: {sangat_rendah}
+            Sangat Tinggi: {summary['sangat tinggi']}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+            Tinggi: {summary['tinggi']}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+            Sedang: {summary['sedang']}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+            Rendah: {summary['rendah']}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+            Sangat Rendah: {summary['sangat rendah']}
         </div>
     </div>
 
     <div class='card' style='background-color: #FFF4F4;'>
         <div class='card-title'>Kab/Kota Tertinggi</div>
-        <div class='card-value'>{kab_max}</div>
-        <div class='card-subtext'>{val_max:.1f}%</div>
+        <div class='card-value'>{kab_tertinggi['name_kabkot']}</div>
+        <div class='card-subtext'>{kab_tertinggi['unpkpd']:.1f}%</div>
     </div>
 
     <div class='card' style='background-color: #F1FFF0;'>
         <div class='card-title'>Kab/Kota Terendah</div>
-        <div class='card-value'>{kab_min}</div>
-        <div class='card-subtext'>{val_min:.1f}%</div>
+        <div class='card-value'>{kab_terendah['name_kabkot']}</div>
+        <div class='card-subtext'>{kab_terendah['unpkpd']:.1f}%</div>
     </div>
 
 </div>
-""".format(
-    rata2_unmet,
-    sangat_tinggi=summary['sangat tinggi'],
-    tinggi=summary['tinggi'],
-    sedang=summary['sedang'],
-    rendah=summary['rendah'],
-    sangat_rendah=summary['sangat rendah'],
-    kab_max=kab_tertinggi['name_kabkot'],
-    val_max=kab_tertinggi['unpkpd'],
-    kab_min=kab_terendah['name_kabkot'],
-    val_min=kab_terendah['unpkpd']
-), unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# --- PETA INTERAKTIF RINGAN (SATSET) ---
-from folium.features import GeoJsonTooltip
-
-# --- PETA ---
-gdf = gpd.read_file("KabJawa.geojson")  # ← PASTIKAN FILE INI ADA
+# --- PETA INTERAKTIF ---
+gdf = gpd.read_file("KabJawa.geojson")
 gdf["IDKAB"] = gdf["IDKAB"].astype(str)
 df["kabkot"] = df["kabkot"].astype(str)
 gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
 
-# Mapping warna kategori
+# Mapping warna
 color_dict = {
     'Sangat Tinggi': '#B91C1C',
     'Tinggi': '#F87171',
@@ -138,15 +126,12 @@ color_dict = {
     'Rendah': '#FDE68A',
     'Sangat Rendah': '#B9FBC0'
 }
-
-# Tambah kolom warna langsung
 gdf["fillColor"] = gdf["cat_unpk"].map(color_dict)
 
-# Buat folium Map
+# Buat peta folium
 m = folium.Map(location=[-7.5, 111], zoom_start=6, tiles="cartodbpositron")
 
-# Satu layer saja
-geojson = folium.GeoJson(
+folium.GeoJson(
     gdf,
     style_function=lambda feature: {
         'fillColor': feature['properties']['fillColor'],
@@ -165,11 +150,12 @@ geojson = folium.GeoJson(
             border: 1px solid black;
             border-radius: 3px;
             padding: 5px;
-        """,
+        """
     ),
     name="Sebaran Unmet Need"
 ).add_to(m)
 
+# --- TAMPILKAN PETA ---
 st.markdown("## Peta Interaktif")
 st_folium(m, width=1200, height=500)
 
