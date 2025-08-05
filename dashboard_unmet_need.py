@@ -107,20 +107,20 @@ with col4:
 # --- PILIHAN FILTRASI ---
 col_kat, col_prov = st.columns(2)
 kategori_opsi = ["Semua"] + list(gdf["cat_unpk"].dropna().unique())
-prov_opsi = ["Semua"] + sorted(gdf["PROVINSI"].dropna().unique())
+prov_opsi = ["Semua"] + sorted(gdf["cat_rse"].dropna().unique())
 
 with col_kat:
-    selected_kategori = st.selectbox("Kategori", kategori_opsi)
+    selected_kategori = st.selectbox("Kategori UNPK", kategori_opsi)
 
 with col_prov:
-    selected_prov = st.selectbox("Provinsi", prov_opsi)
+    selected_prov = st.selectbox("Kualitas Hasil Estimasi", prov_opsi)
 
 # --- FILTER DATA ---
 filtered_gdf = gdf.copy()
 if selected_kategori != "Semua":
     filtered_gdf = filtered_gdf[filtered_gdf["cat_unpk"] == selected_kategori]
 if selected_prov != "Semua":
-    filtered_gdf = filtered_gdf[filtered_gdf["PROVINSI"] == selected_prov]
+    filtered_gdf = filtered_gdf[filtered_gdf["cat_rse"] == selected_prov]
 
 # --- PETA FOLIUM ---
 m = folium.Map(location=[-7.5, 110.5], zoom_start=7, tiles="cartodbpositron")
