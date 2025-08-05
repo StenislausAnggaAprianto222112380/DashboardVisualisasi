@@ -42,6 +42,9 @@ st.markdown("""
         transform: scale(1.03);
         box-shadow: 0px 0px 15px rgba(0,0,0,0.2);
     }
+    .card h4, .card h1, .card p {
+        color: white !important;
+    }
     .card h4 {
         font-size: 18px;
         font-weight: bold;
