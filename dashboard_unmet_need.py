@@ -118,6 +118,7 @@ if selected_prov != "Semua":
 
 # --- PETA FOLIUM ---
 #import json
+m = folium.Map(location=[-7.5, 110.5], zoom_start=7, tiles="cartodbpositron")
 
 # Konversi GeoDataFrame ke GeoJSON sekali saja agar ringan
 geojson_data = json.loads(filtered_gdf.to_json())
