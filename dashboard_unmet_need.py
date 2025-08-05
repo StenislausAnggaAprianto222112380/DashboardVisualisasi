@@ -123,7 +123,7 @@ with col1:
         st.markdown(
             f"""
             <div style="background-color:#4B8BBE; padding:20px; border-radius:12px; color:white; text-align:center;">
-                <h2 style="margin:0; font-size:28px; font-weight:bold;">{nasional_value}%</h2>
+                <h2 style="margin:0; font-size:28px; font-weight:bold;">13.85%</h2>
                 <p style="margin:5px 0 0 0;">Angka Nasional UNPK PD</p>
             </div>
             """,
