@@ -109,10 +109,10 @@ kab_terendah = gdf.loc[gdf["unpkpd"].idxmin()]
 #     </div>
 #     """, unsafe_allow_html=True)
 
-# BUKA KONTENER LUAR DENGAN BACKGROUND HIJAU MUDA
 st.markdown("""
-<div style="background-color:#DBE4C9;padding:6x;border-radius:3px;margin-bottom:4px">
-    <h2 style="text-align:center;margin-top:0;margin-bottom:6px;">Statistik UNPKPD</h2>
+<div style="background-color:#DBE4C9;padding:30px;border-radius:15px;margin-bottom:20px;max-width:900px;margin-left:auto;margin-right:auto;">
+    <h2 style="text-align:center;margin-top:0;margin-bottom:30px;">Statistik UNPKPD</h2>
+</div>
 """, unsafe_allow_html=True)
 
 # --- 4 KOLOM KARTU SAJA ---
