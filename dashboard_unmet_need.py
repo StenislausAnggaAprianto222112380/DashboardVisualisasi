@@ -34,11 +34,10 @@ color_dict = {
 
 st.markdown("""
 <div style="text-align: center;">
-    <img src="https://www.freepik.com/free-photo/medical-banner-with-doctor-patient_30555910.htm#fromView=search&page=1&position=15&uuid=7924613f-397d-435a-ba38-7778c44c2dd3&query=healthcare" alt="Disabilitas" width="600"/>
+    <img src="https://github.com/StenislausAnggaAprianto222112380/DashboardVisualisasi/blob/9c93d2fa8d7195300c4306df5a64fc909767c093/unpkpd.jpg" alt="Ilustrasi UNPKPD" width="600"/>
     <p style="font-size: 13px; color: grey;">Sumber gambar: Freepik.com</p>
 </div>
 """, unsafe_allow_html=True)
-
 
 # --- HEADER ---
 st.markdown("<h1 style='text-align: center;'>Dashboard Unmet Need Pelayanan Kesehatan pada Penyandang Disabilitas di Pulau Jawa Tahun 2023</h1>", unsafe_allow_html=True)
