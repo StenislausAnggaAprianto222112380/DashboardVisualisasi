@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import geopandas as gpd
 import folium
+import json
 from streamlit_folium import st_folium
 from branca.colormap import LinearColormap
 from shapely.geometry import shape
@@ -116,28 +117,38 @@ if selected_prov != "Semua":
     filtered_gdf = filtered_gdf[filtered_gdf["PROVINSI"] == selected_prov]
 
 # --- PETA FOLIUM ---
-m = folium.Map(location=[-7.5, 110.5], zoom_start=7, tiles="cartodbpositron")
+#import json
 
-for _, row in filtered_gdf.iterrows():
-    color = color_dict.get(row["kategori"], "#d3d3d3")
-    tooltip = f"""
-    <b>{row['name_kabkot']}</b><br>
-    UNPKPD: {row['unpkpd']}%<br>
-    Kategori UNPKPD: {row['kategori']}<br>
-    Kategori Data: {row['cat_rse']}<br>
-    """
-    geojson = folium.GeoJson(
-        row["geometry"],
-        style_function=lambda x, color=color: {
-            "fillColor": color,
-            "color": "black",
-            "weight": 1,
-            "fillOpacity": 0.7
-        },
-        highlight_function=lambda x: {"weight": 3, "color": "black"},
-        tooltip=tooltip
+# Konversi GeoDataFrame ke GeoJSON sekali saja agar ringan
+geojson_data = json.loads(filtered_gdf.to_json())
+
+def style_function(feature):
+    kategori = feature["properties"]["kategori"]
+    color = color_dict.get(kategori, "#d3d3d3")
+    return {
+        "fillColor": color,
+        "color": "black",
+        "weight": 1,
+        "fillOpacity": 0.7,
+    }
+
+def highlight_function(feature):
+    return {"weight": 3, "color": "black"}
+
+# Tooltip interaktif
+geojson_layer = folium.GeoJson(
+    geojson_data,
+    style_function=style_function,
+    highlight_function=highlight_function,
+    tooltip=folium.GeoJsonTooltip(
+        fields=["name_kabkot", "unpkpd", "kategori", "cat_rse"],
+        aliases=["Kabupaten/Kota:", "UNPKPD (%):", "Kategori UNPKPD:", "Kategori Data:"],
+        sticky=True,
+        labels=True
     )
-    geojson.add_to(m)
+)
+
+geojson_layer.add_to(m)
 
 st.markdown("### Peta Interaktif")
 st_folium(m, width=1200, height=600)
