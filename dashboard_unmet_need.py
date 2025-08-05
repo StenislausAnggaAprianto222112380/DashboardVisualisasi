@@ -3,167 +3,171 @@ import pandas as pd
 import geopandas as gpd
 import folium
 from streamlit_folium import st_folium
-from folium.features import GeoJsonTooltip
+from shapely.geometry import shape
 
-# --- SETUP HALAMAN ---
-st.set_page_config(page_title="Unmet Need Disabilitas 2023", layout="wide")
+# --- KONFIGURASI DASAR ---
+st.set_page_config(page_title="Dashboard Unmet Need Disabilitas", layout="wide")
 
-# --- HEADER STYLE ---
+# --- BACA DATA (CACHED) ---
+@st.cache_data
+def load_data():
+    df = pd.read_excel("DatasetVisualisasi.xlsx")
+    gdf = gpd.read_file("KabJawa.shp")
+    df["kabkot"] = df["kabkot"].astype(str)
+    gdf["IDKAB"] = gdf["IDKAB"].astype(str)
+    return df, gdf
+
+df, gdf = load_data()
+gdf_merged = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
+
+# --- WARNA KATEGORI ---
+kategori_colors = {
+    "Sangat Tinggi": "#D62246",
+    "Tinggi": "#F9893E",
+    "Sedang": "#F3D64D",
+    "Rendah": "#48C28E"
+}
+if "Sangat Tinggi" not in df["cat_unpk"].unique():
+    kategori_colors.pop("Sangat Tinggi")
+
+# ================================
+#           HEADER UTAMA
+# ================================
 st.markdown("""
-    <style>
-    html, body, [class*="css"] {
-        font-family: 'Arial', sans-serif;
-    }
-    .big-title {
-        font-size: 36px !important;
-        font-weight: 800;
-        color: #1B4332;
-        margin-bottom: 0.2rem;
-        line-height: 1.2;
-    }
-    .subtext {
-        font-size: 16px;
-        color: #444;
-        margin-top: 0;
-        margin-bottom: 2rem;
-    }
-    .card {
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        flex: 1;
-        min-width: 230px;
-    }
-    .card-title {
-        font-weight: 700;
-        font-size: 16px;
-        margin-bottom: 0.2rem;
-        color: #333;
-    }
-    .card-value {
-        font-size: 32px;
-        font-weight: 800;
-        color: #111;
-        margin-top: 0.3rem;
-        line-height: 1.2;
-    }
-    .card-subtext {
-        font-size: 14px;
-        color: #666;
-        margin-top: 0.3rem;
-    }
-    </style>
+    <h1 style='text-align: center; color: #0F3D28; font-size: 32px;'>
+        Unmet Need Pelayanan Kesehatan pada Penyandang Disabilitas di Pulau Jawa Tahun 2023
+    </h1>
 """, unsafe_allow_html=True)
 
-# --- HEADER ---
-st.markdown("<div class='big-title'>Unmet Need Pelayanan Kesehatan pada Penyandang Disabilitas di Pulau Jawa Tahun 2023</div>", unsafe_allow_html=True)
+# ================================
+#         KARTU STATISTIK
+# ================================
+col1, col2, col3, col4 = st.columns([1.2, 1.2, 1.4, 1.4])
 
-st.markdown("<p class='subtext'>Unmet need pelayanan kesehatan pada penyandang disabilitas merupakan proporsi penyandang disabilitas yang merasa sakit dalam 1 tahun terakhir namun tidak mendapatkan pelayanan yang dibutuhkan (BPS).</p>", unsafe_allow_html=True)
-
-# --- LOAD DATA ---
-df = pd.read_excel("DatasetVisualisasi.xlsx")
-
-# --- HITUNG STATISTIK ---
-rata2_unmet = df['unpkpd'].mean()
-kab_tertinggi = df.loc[df['unpkpd'].idxmax()]
-kab_terendah = df.loc[df['unpkpd'].idxmin()]
-
-summary = {
-    'tinggi': df[df['cat_unpk'] == 'Tinggi'].shape[0],
-    'sedang': df[df['cat_unpk'] == 'Sedang'].shape[0],
-    'rendah': df[df['cat_unpk'] == 'Rendah'].shape[0],
-    'sangat tinggi': df[df['cat_unpk'] == 'Sangat Tinggi'].shape[0],
-    'sangat rendah': df[df['cat_unpk'] == 'Sangat Rendah'].shape[0]
-}
-
-# --- TAMPILKAN KARTU STATISTIK ---
-st.markdown(f"""
-<div style='display: flex; flex-wrap: wrap; gap: 1.25rem;'>
-
-    <div class='card' style='background-color: #E6F4EA;'>
-        <div class='card-title'>Unmet Need</div>
-        <div class='card-value'>{rata2_unmet:.1f}%</div>
-        <div class='card-subtext'>Rata-rata unmet need di Pulau Jawa</div>
+with col1:
+    mean_val = df["unpkpd"].mean()
+    st.markdown(f"""
+    <div style="background-color:#EDF8F4;padding:20px;border-radius:12px;">
+        <h4 style="margin:0;">Unmet Need</h4>
+        <h1 style="color:#0F3D28;">{mean_val:.1f}%</h1>
+        <p style="font-size:14px;margin:0;">Penyandang disabilitas dengan kebutuhan layanan kesehatan yang tidak terpenuhi</p>
     </div>
+    """, unsafe_allow_html=True)
 
-    <div class='card' style='background-color: #F3F7FA; flex: 2;'>
-        <div class='card-title'>Sebaran Wilayah</div>
-        <div class='card-value' style='font-size: 18px; font-weight: 600; color: #1B4332;'>
-            Sangat Tinggi: {summary['sangat tinggi']}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-            Tinggi: {summary['tinggi']}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-            Sedang: {summary['sedang']}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-            Rendah: {summary['rendah']}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-            Sangat Rendah: {summary['sangat rendah']}
-        </div>
+with col2:
+    tinggi = df[df["cat_unpk"] == "Tinggi"].shape[0]
+    sedang = df[df["cat_unpk"] == "Sedang"].shape[0]
+    rendah = df[df["cat_unpk"] == "Rendah"].shape[0]
+    st.markdown(f"""
+    <div style="background-color:#F4F6F8;padding:20px;border-radius:12px;">
+        <h4 style="margin:0;">Sebaran Wilayah</h4>
+        <p>Tinggi: <b>{tinggi}</b></p>
+        <p>Sedang: <b>{sedang}</b></p>
+        <p>Rendah: <b>{rendah}</b></p>
     </div>
+    """, unsafe_allow_html=True)
 
-    <div class='card' style='background-color: #FFF4F4;'>
-        <div class='card-title'>Kab/Kota Tertinggi</div>
-        <div class='card-value'>{kab_tertinggi['name_kabkot']}</div>
-        <div class='card-subtext'>{kab_tertinggi['unpkpd']:.1f}%</div>
+with col3:
+    top3 = df.nlargest(3, "unpkpd")
+    st.markdown("""
+    <div style="background-color:#FFF3E0;padding:20px;border-radius:12px;">
+        <h4 style="margin:0;">Kabupaten/Kota Tertinggi</h4>
+    """, unsafe_allow_html=True)
+    for _, row in top3.iterrows():
+        st.markdown(
+            f"<p style='margin:4px 0;'><b>{row['name_kabkot']}</b>: <span style='color:#F9893E;'>{row['unpkpd']:.1f}%</span></p>",
+            unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with col4:
+    bottom = df.nsmallest(1, "unpkpd").iloc[0]
+    st.markdown(f"""
+    <div style="background-color:#E7F6ED;padding:20px;border-radius:12px;">
+        <h4 style="margin:0;">Kabupaten/Kota Terendah</h4>
+        <h3 style="color:#0F3D28;">{bottom['name_kabkot']}</h3>
+        <h2 style="color:#0F3D28;">{bottom['unpkpd']:.1f}%</h2>
     </div>
+    """, unsafe_allow_html=True)
 
-    <div class='card' style='background-color: #F1FFF0;'>
-        <div class='card-title'>Kab/Kota Terendah</div>
-        <div class='card-value'>{kab_terendah['name_kabkot']}</div>
-        <div class='card-subtext'>{kab_terendah['unpkpd']:.1f}%</div>
-    </div>
+# ================================
+#         PETA INTERAKTIF
+# ================================
+st.markdown("<h2 style='margin-top:40px;'>🗺️ Peta Interaktif</h2>", unsafe_allow_html=True)
 
-</div>
-""", unsafe_allow_html=True)
+# Dropdown Filter
+col_kat, col_rse = st.columns([1, 1])
+with col_kat:
+    kategori_filter = st.selectbox("Pilih Kategori Unmet Need", options=["Semua"] + sorted(df["cat_unpk"].unique()))
+with col_rse:
+    kualitas_filter = st.selectbox("Pilih Kualitas Estimasi", options=["Semua"] + sorted(df["cat_rse"].unique()))
 
-# --- PETA INTERAKTIF ---
-gdf = gpd.read_file("KabJawa.geojson")
-gdf["IDKAB"] = gdf["IDKAB"].astype(str)
-df["kabkot"] = df["kabkot"].astype(str)
-gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
+# Filter Data
+gdf_filtered = gdf_merged.copy()
+if kategori_filter != "Semua":
+    gdf_filtered = gdf_filtered[gdf_filtered["cat_unpk"] == kategori_filter]
+if kualitas_filter != "Semua":
+    gdf_filtered = gdf_filtered[gdf_filtered["cat_rse"] == kualitas_filter]
 
-# Mapping warna
-color_dict = {
-    'Sangat Tinggi': '#B91C1C',
-    'Tinggi': '#F87171',
-    'Sedang': '#FDBA74',
-    'Rendah': '#FDE68A',
-    'Sangat Rendah': '#B9FBC0'
-}
-gdf["fillColor"] = gdf["cat_unpk"].map(color_dict)
+# Tooltip
+gdf_filtered["tooltip_text"] = (
+    "<b>" + gdf_filtered["name_kabkot"] + "</b><br>"
+    + "Unmet Need: " + gdf_filtered["unpkpd"].round(1).astype(str) + "%<br>"
+    + "Kategori: " + gdf_filtered["cat_unpk"] + "<br>"
+    + "Kualitas: " + gdf_filtered["cat_rse"]
+)
 
-# Buat peta folium
-m = folium.Map(location=[-7.5, 111], zoom_start=6, tiles="cartodbpositron")
+# Peta Folium
+m = folium.Map(location=[-7.5, 110.0], zoom_start=7.2, tiles="cartodbpositron", control_scale=True)
+
+def style_function(feature):
+    kategori = feature["properties"].get("cat_unpk", "")
+    return {
+        "fillColor": kategori_colors.get(kategori, "gray"),
+        "color": "black",
+        "weight": 0.5,
+        "fillOpacity": 0.7
+    }
 
 folium.GeoJson(
-    gdf,
-    style_function=lambda feature: {
-        'fillColor': feature['properties']['fillColor'],
-        'color': 'black',
-        'weight': 0.3,
-        'fillOpacity': 0.6
-    },
-    tooltip=GeoJsonTooltip(
-        fields=["name_kabkot", "unpkpd"],
-        aliases=["Kab/Kota", "Unmet Need (%)"],
-        localize=True,
-        sticky=False,
-        labels=True,
-        style="""
-            background-color: white;
-            border: 1px solid black;
-            border-radius: 3px;
-            padding: 5px;
-        """
+    gdf_filtered,
+    tooltip=folium.GeoJsonTooltip(
+        fields=["tooltip_text"],
+        aliases=[""],
+        sticky=True,
+        labels=False,
+        style=("background-color: white; padding: 5px;")
     ),
-    name="Sebaran Unmet Need"
+    style_function=style_function,
+    highlight_function=lambda feature: {
+        "weight": 3,
+        "color": "blue",
+        "fillOpacity": 0.9
+    }
 ).add_to(m)
 
-# --- TAMPILKAN PETA ---
-st.markdown("## Peta Interaktif")
-st_folium(m, width=1200, height=500)
+# Legend
+legend_items = "".join(
+    f"<span style='background-color:{kategori_colors[k]};'>&nbsp;&nbsp;&nbsp;&nbsp;</span> {k}<br>"
+    for k in kategori_colors
+)
+legend_html = f"""
+<div style='position: fixed; bottom: 70px; left: 30px; width: 180px; height: auto;
+     background-color: white; border:2px solid grey; z-index:9999; font-size:14px;
+     padding: 10px; border-radius: 8px'>
+<b>Legenda:</b><br>
+{legend_items}
+</div>
+"""
+m.get_root().html.add_child(folium.Element(legend_html))
 
-# --- CATATAN KAKI ---
-st.markdown("""
----
-<p style='font-size:13px; color:#999;'>
-Dashboard ini dikembangkan menggunakan Streamlit sebagai bagian dari visualisasi data Unmet Need pelayanan kesehatan pada penyandang disabilitas di Pulau Jawa tahun 2023.<br>
-Sumber data: Badan Pusat Statistik (BPS).
-</p>
+st_folium(m, width=1000, height=600)
+
+# ================================
+#             FOOTER
+# ================================
+st.markdown("""<hr/>
+<center>
+2025 Skripsi TA | D-IV Komputasi Statistik | Politeknik Statistika STIS <br>
+Email: 222112380@stis.ac.id
+</center>
 """, unsafe_allow_html=True)
