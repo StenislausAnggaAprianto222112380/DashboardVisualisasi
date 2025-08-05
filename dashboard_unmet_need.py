@@ -94,38 +94,53 @@ st.markdown("""
     val_min=kab_terendah['unpkpd']
 ), unsafe_allow_html=True)
 
-# --- PETA ---
-gdf = gpd.read_file("KabJawa.geojson")
+# --- PETA INTERAKTIF RINGAN (SATSET) ---
+from folium.features import GeoJsonTooltip
 
-# Pastikan kolom ID sama tipe data
+# Pastikan ID kolom sama
 gdf["IDKAB"] = gdf["IDKAB"].astype(str)
 df["kabkot"] = df["kabkot"].astype(str)
-
-# Gabungkan
 gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
 
-# Warna kategori baru
+# Mapping warna kategori
 color_dict = {
-    'Sangat Tinggi': '#B91C1C',  # merah bata
-    'Tinggi': '#F87171',         # merah
-    'Sedang': '#FDBA74',         # oranye
-    'Rendah': '#FDE68A',         # kuning
-    'Sangat Rendah': '#B9FBC0'   # hijau muda
+    'Sangat Tinggi': '#B91C1C',
+    'Tinggi': '#F87171',
+    'Sedang': '#FDBA74',
+    'Rendah': '#FDE68A',
+    'Sangat Rendah': '#B9FBC0'
 }
 
+# Tambah kolom warna langsung
+gdf["fillColor"] = gdf["cat_unpk"].map(color_dict)
+
+# Buat folium Map
 m = folium.Map(location=[-7.5, 111], zoom_start=6, tiles="cartodbpositron")
 
-for _, row in gdf.iterrows():
-    folium.GeoJson(
-        row['geometry'],
-        style_function=lambda feature, color=color_dict[row['cat_unpk']]: {
-            'fillColor': color,
-            'color': 'black',
-            'weight': 0.5,
-            'fillOpacity': 0.6
-        },
-        tooltip=folium.Tooltip(f"{row['name_kabkot']}: {row['unpkpd']}%")
-    ).add_to(m)
+# Satu layer saja
+geojson = folium.GeoJson(
+    gdf,
+    style_function=lambda feature: {
+        'fillColor': feature['properties']['fillColor'],
+        'color': 'black',
+        'weight': 0.3,
+        'fillOpacity': 0.6
+    },
+    tooltip=GeoJsonTooltip(
+        fields=["name_kabkot", "unpkpd"],
+        aliases=["Kab/Kota", "Unmet Need (%)"],
+        localize=True,
+        sticky=False,
+        labels=True,
+        style="""
+            background-color: white;
+            border: 1px solid black;
+            border-radius: 3px;
+            padding: 5px;
+        """,
+    ),
+    name="Sebaran Unmet Need"
+).add_to(m)
 
 st.markdown("## Peta Interaktif")
 st_folium(m, width=1200, height=500)
