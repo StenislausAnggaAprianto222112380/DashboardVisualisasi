@@ -34,7 +34,7 @@ color_dict = {
 
 st.markdown("""
 <div style="text-align: center;">
-    <img src="https://github.com/StenislausAnggaAprianto222112380/DashboardVisualisasi/blob/9c93d2fa8d7195300c4306df5a64fc909767c093/unpkpd.jpg" alt="Ilustrasi UNPKPD" width="600"/>
+    <img src="https://github.com/StenislausAnggaAprianto222112380/DashboardVisualisasi/blob/main/unpkpd.jpg" alt="Ilustrasi UNPKPD" width="600"/>
     <p style="font-size: 13px; color: grey;">Sumber gambar: Freepik.com</p>
 </div>
 """, unsafe_allow_html=True)
