@@ -3,14 +3,16 @@ import pandas as pd
 import geopandas as gpd
 import folium
 from streamlit_folium import st_folium
-from folium.features import GeoJsonTooltip
+from branca.colormap import LinearColormap
+from shapely.geometry import shape
 
-# --- CONFIG PAGE ---
-st.set_page_config(layout="wide", page_title="Unmet Need Disabilitas 2023 Jawa", page_icon="📊")
+# --- STYLING & PAGE SETUP ---
+st.set_page_config("Dashboard UNPK PD Disabilitas 2023", layout="wide")
+with open("style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # --- LOAD DATA ---
 @st.cache_data
-
 def load_data():
     df = pd.read_excel("DatasetVisualisasi.xlsx")
     gdf = gpd.read_file("KabJawa.shp")
@@ -18,65 +20,124 @@ def load_data():
 
 df, gdf = load_data()
 
-# --- PERSIAPAN DATA ---
-gdf["IDKAB"] = gdf["IDKAB"].astype(int)
-df["kabkot"] = df["kabkot"].astype(int)
-merged = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
+# --- MERGE DATA ---
+gdf["IDKAB"] = gdf["IDKAB"].astype(str)
+df["kabkot"] = df["kabkot"].astype(str)
+gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot", how="left")
 
-# --- JUDUL ---
-st.title("📊 Visualisasi Unmet Need Disabilitas 2023 di Pulau Jawa")
-st.markdown("""
-Dashboard ini menyajikan visualisasi data *Unmet Need Kebutuhan Pelayanan Disabilitas* tahun 2023 untuk wilayah kabupaten/kota di Pulau Jawa.
-""")
+# --- KATEGORI UNPKPD ---
+def kategori_unpkpd(persen):
+    if persen <= 10:
+        return "Sangat Rendah"
+    elif persen <= 20:
+        return "Rendah"
+    elif persen <= 30:
+        return "Sedang"
+    elif persen <= 40:
+        return "Tinggi"
+    else:
+        return "Sangat Tinggi"
 
-# --- STATISTIK: KABUPATEN TERTINGGI ---
-highest_row = merged.loc[merged['unpkpd'].idxmax()]
-col1, col2 = st.columns([3, 1])
+gdf["kategori"] = gdf["unpkpd"].apply(kategori_unpkpd)
+
+# --- WARNA PETA ---
+color_dict = {
+    "Sangat Rendah": "#b7e4c7",  # Hijau muda
+    "Rendah": "#fef9b0",         # Kuning
+    "Sedang": "#fdae61",         # Orange
+    "Tinggi": "#f46d43",         # Merah
+    "Sangat Tinggi": "#a50026"   # Merah bata
+}
+
+# --- HEADER ---
+st.markdown("<h1 style='text-align: center;'>UNPK PD Pelayanan Kesehatan Penyandang Disabilitas di Pulau Jawa Tahun 2023</h1>", unsafe_allow_html=True)
+
+# --- STATISTIK ---
+col1, col2, col3, col4 = st.columns(4)
+
 with col1:
-    st.subheader("Kabupaten/Kota dengan Unmet Need Tertinggi")
-    st.markdown(f"### {highest_row['name_kabkot']}")
-    st.markdown(f"**Unmet Need:** {highest_row['unpkpd']:.2f}%")
-    st.markdown(f"**RSE:** {highest_row['rse']:.2f}%")
-    st.markdown(f"**Kategori:** {highest_row['cat_unpk']}")
+    st.markdown("""
+        <div class='card hover-card'>
+            <h2>UNPK PD</h2>
+            <h1>22.8%</h1>
+            <p>Penyandang disabilitas yang kebutuhannya belum terpenuhi</p>
+        </div>
+    """, unsafe_allow_html=True)
+
 with col2:
-    st.metric("Unmet Need Tertinggi", f"{highest_row['unpkpd']:.2f}%")
+    kategori_count = gdf["kategori"].value_counts()
+    st.markdown(f"""
+        <div class='card hover-card'>
+            <h2>Sebaran Wilayah</h2>
+            <p>Sangat Tinggi: {kategori_count.get('Sangat Tinggi', 0)}</p>
+            <p>Tinggi: {kategori_count.get('Tinggi', 0)}</p>
+            <p>Sedang: {kategori_count.get('Sedang', 0)}</p>
+            <p>Rendah: {kategori_count.get('Rendah', 0)}</p>
+            <p>Sangat Rendah: {kategori_count.get('Sangat Rendah', 0)}</p>
+        </div>
+    """, unsafe_allow_html=True)
 
-# --- PETA CHOROPLETH ---
-st.subheader("Peta Sebaran Unmet Need Disabilitas (2023)")
+with col3:
+    max_row = gdf.loc[gdf["unpkpd"].idxmax()]
+    st.markdown(f"""
+        <div class='card hover-card'>
+            <h2>Kabupaten Tertinggi</h2>
+            <h1>{max_row["unpkpd"]:.1f}%</h1>
+            <p>{max_row["name_kabkot"]}</p>
+        </div>
+    """, unsafe_allow_html=True)
 
-# Peta dasar
+with col4:
+    min_row = gdf.loc[gdf["unpkpd"].idxmin()]
+    st.markdown(f"""
+        <div class='card hover-card'>
+            <h2>Kabupaten Terendah</h2>
+            <h1>{min_row["unpkpd"]:.1f}%</h1>
+            <p>{min_row["name_kabkot"]}</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+# --- PILIHAN FILTRASI ---
+col_kat, col_prov = st.columns(2)
+kategori_opsi = ["Semua"] + list(gdf["kategori"].unique())
+prov_opsi = ["Semua"] + sorted(gdf["PROVINSI"].unique())
+
+with col_kat:
+    selected_kategori = st.selectbox("Kategori", kategori_opsi)
+
+with col_prov:
+    selected_prov = st.selectbox("Provinsi", prov_opsi)
+
+# --- FILTER DATA ---
+filtered_gdf = gdf.copy()
+if selected_kategori != "Semua":
+    filtered_gdf = filtered_gdf[filtered_gdf["kategori"] == selected_kategori]
+if selected_prov != "Semua":
+    filtered_gdf = filtered_gdf[filtered_gdf["PROVINSI"] == selected_prov]
+
+# --- PETA FOLIUM ---
 m = folium.Map(location=[-7.5, 110.5], zoom_start=7, tiles="cartodbpositron")
 
-# Warna dinamis berdasarkan kategori
-def get_color(category):
-    if category == "Sangat Tinggi": return "#D7191C"
-    elif category == "Tinggi": return "#FDAE61"
-    elif category == "Sedang": return "#FFFFBF"
-    elif category == "Rendah": return "#A6D96A"
-    else: return "#1A9641"
-
-# Tambahkan poligon dan tooltip
-for _, row in merged.iterrows():
-    geo = folium.GeoJson(
-        row["geometry"].__geo_interface__,
-        style_function=lambda x, color=get_color(row['cat_unpk']): {
-            'fillColor': color,
-            'color': 'black',
-            'weight': 1,
-            'fillOpacity': 0.7,
+for _, row in filtered_gdf.iterrows():
+    color = color_dict.get(row["kategori"], "#d3d3d3")
+    tooltip = f"""
+    <b>{row['name_kabkot']}</b><br>
+    UNPKPD: {row['unpkpd']}%<br>
+    Kategori UNPKPD: {row['kategori']}<br>
+    Kategori Data: {row['cat_rse']}<br>
+    """
+    geojson = folium.GeoJson(
+        row["geometry"],
+        style_function=lambda x, color=color: {
+            "fillColor": color,
+            "color": "black",
+            "weight": 1,
+            "fillOpacity": 0.7
         },
-        tooltip=folium.Tooltip(
-            f"<b>{row['name_kabkot']}</b><br/>"
-            f"Unmet Need: {row['unpkpd']:.2f}%<br/>"
-            f"RSE: {row['rse']:.2f}%<br/>"
-            f"Kategori: {row['cat_unpk']}"
-        )
+        highlight_function=lambda x: {"weight": 3, "color": "black"},
+        tooltip=tooltip
     )
-    geo.add_to(m)
+    geojson.add_to(m)
 
-# Tampilkan peta
-st_folium(m, width=1000, height=600)
-
-# --- FOOTER ---
-st.markdown("---")
-st.caption("Sumber data: BPS 2023, diolah | Dashboard dibuat dengan ❤️ oleh Sten. 💻")
+st.markdown("### Peta Interaktif")
+st_folium(m, width=1200, height=600)
