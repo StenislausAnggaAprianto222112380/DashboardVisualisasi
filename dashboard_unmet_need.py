@@ -97,7 +97,8 @@ st.markdown("""
 # --- PETA INTERAKTIF RINGAN (SATSET) ---
 from folium.features import GeoJsonTooltip
 
-# Pastikan ID kolom sama
+# --- PETA ---
+gdf = gpd.read_file("KabJawa.geojson")  # ← PASTIKAN FILE INI ADA
 gdf["IDKAB"] = gdf["IDKAB"].astype(str)
 df["kabkot"] = df["kabkot"].astype(str)
 gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
