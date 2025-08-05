@@ -87,7 +87,7 @@ with col2:
     <div class="card" style="background-color:#d35400;padding:20px;border-radius:10px;text-align:center;color:white">
         <h4>Sebaran Wilayah</h4>
         <h1 style="margin-bottom: 0;">{len(kategori_counts)} Kategori</h1>
-        <p style='line-height:1.5'>{kategori_display}</p>
+        <p style="margin-top: 0; line-height:1.2;">{kategori_display}</p>
     </div>
     """, unsafe_allow_html=True)
     
