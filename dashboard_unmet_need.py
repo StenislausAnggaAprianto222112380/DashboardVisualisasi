@@ -70,50 +70,6 @@ kategori_display = "<br>".join([f"{k}: {v}" for k, v in kategori_counts.items()]
 kab_tertinggi = gdf.loc[gdf["unpkpd"].idxmax()]
 kab_terendah = gdf.loc[gdf["unpkpd"].idxmin()]
 
-# # --- 4 KOLOM KARTU SAJA ---
-# col1, col2, col3, col4 = st.columns(4)
-
-# with col1:
-#     st.markdown("""
-#     <div class="card" style="background-color:#c0392b;padding:20px;border-radius:10px;text-align:center;color:white">
-#         <h4>UNPK PD Nasional</h4>
-#         <h1>13.85%</h1>
-#         <p>Angka Nasional UNPK PD sebesar 13.85%</p>
-#     </div>
-#     """, unsafe_allow_html=True)
-
-# with col2:
-#     st.markdown(f"""
-#     <div class="card" style="background-color:#d35400;padding:20px;border-radius:10px;text-align:center;color:white">
-#         <h4>Sebaran Wilayah</h4>
-#         <h1 style="margin-bottom: 0;">{len(kategori_counts)} Kategori</h1>
-#         <p style="margin-top: 0; line-height:1.2;">{kategori_display}</p>
-#     </div>
-#     """, unsafe_allow_html=True)
-    
-# with col3:
-#     st.markdown(f"""
-#     <div class="card" style="background-color:#16a085;padding:20px;border-radius:10px;text-align:center;color:white">
-#         <h4>Kabupaten Tertinggi</h4>
-#         <h1>{kab_tertinggi['unpkpd']:.2f}%</h1>
-#         <p>{kab_tertinggi['name_kabkot']}</p>
-#     </div>
-#     """, unsafe_allow_html=True)
-
-# with col4:
-#     st.markdown(f"""
-#     <div class="card" style="background-color:#2980b9;padding:20px;border-radius:10px;text-align:center;color:white">
-#         <h4>Kabupaten Terendah</h4>
-#         <h1>{kab_terendah['unpkpd']:.2f}%</h1>
-#         <p>{kab_terendah['name_kabkot']}</p>
-#     </div>
-#     """, unsafe_allow_html=True)
-
-st.markdown("""
-<div style="background-color:#DBE4C9;padding:30px;border-radius:15px;margin-bottom:20px;display: inline-block;">
-    <h2 style="text-align:center;margin-top:0;margin-bottom:30px;">Statistik UNPKPD</h2>
-""", unsafe_allow_html=True)
-
 # --- 4 KOLOM KARTU SAJA ---
 col1, col2, col3, col4 = st.columns(4)
 
@@ -152,9 +108,6 @@ with col4:
         <p>{kab_terendah['name_kabkot']}</p>
     </div>
     """, unsafe_allow_html=True)
-
-# TUTUP KONTENER LUAR
-st.markdown("</div>", unsafe_allow_html=True)
 
 
 
