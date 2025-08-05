@@ -68,13 +68,18 @@ with col1:
     """.format(kab_tertinggi['name_kabkot']), unsafe_allow_html=True)
 
 with col2:
-    st.markdown("""
-    <div class="card">
-        <div class="card-title">Kabupaten Terendah</div>
-        <div class="card-value">{}</div>
-    </div>
-    """.format(kab_terendah['name_kabkot']), unsafe_allow_html=True)
-
+    kategori_count = merged_gdf["cat_unpk"].value_counts()
+    st.markdown(f"""
+        <div class='card hover-card'>
+            <h2>Sebaran Wilayah</h2>
+            <p>Sangat Tinggi: {kategori_count.get('Sangat Tinggi', 0)}</p>
+            <p>Tinggi: {kategori_count.get('Tinggi', 0)}</p>
+            <p>Sedang: {kategori_count.get('Sedang', 0)}</p>
+            <p>Rendah: {kategori_count.get('Rendah', 0)}</p>
+            <p>Sangat Rendah: {kategori_count.get('Sangat Rendah', 0)}</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
 with col3:
     st.markdown("""
     <div class="card">
