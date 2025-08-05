@@ -19,8 +19,14 @@ def load_data():
 
 df, gdf = load_data()
 
-# --- GABUNGKAN DATAFRAME ---
-merged_gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
+df, gdf = load_data()
+
+# --- KONVERSI TIPE DATA SEBELUM MERGE ---
+df["kabkot"] = df["kabkot"].astype(str)
+gdf["IDKAB"] = gdf["IDKAB"].astype(str)
+
+# --- MERGE DATA ---
+merged_gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot", how="left")
 
 # --- BUAT WARNA KATEGORI ---
 color_dict = {
