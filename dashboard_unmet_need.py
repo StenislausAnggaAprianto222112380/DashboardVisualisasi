@@ -208,11 +208,11 @@ else:
         border-radius: 5px;
         box-shadow: 2px 2px 5px rgba(0,0,0,0.3);">
         <b>Legenda Kategori UNPKPD</b><br>
-        <i style="background:#b7f7a5;width:18px;height:18px;float:left;margin-right:8px;"></i>Sangat Rendah<br>
-        <i style="background:#f7f79c;width:18px;height:18px;float:left;margin-right:8px;"></i>Rendah<br>
-        <i style="background:#fca15e;width:18px;height:18px;float:left;margin-right:8px;"></i>Sedang<br>
-        <i style="background:#f75d59;width:18px;height:18px;float:left;margin-right:8px;"></i>Tinggi<br>
-        <i style="background:#8b0000;width:18px;height:18px;float:left;margin-right:8px;"></i>Sangat Tinggi
+        <i style="background:#b7f7a5;width:18px;height:18px;float:left;margin-right:8px;"></i>Sangat Rendah [2.37%-7.38%]<br>
+        <i style="background:#f7f79c;width:18px;height:18px;float:left;margin-right:8px;"></i>Rendah        [7.38%-12.39%]<br>
+        <i style="background:#fca15e;width:18px;height:18px;float:left;margin-right:8px;"></i>Sedang        [12.39%-17.39%]<br>
+        <i style="background:#f75d59;width:18px;height:18px;float:left;margin-right:8px;"></i>Tinggi        [17.39%-22.40%]<br>
+        <i style="background:#8b0000;width:18px;height:18px;float:left;margin-right:8px;"></i>Sangat Tinggi [22.40%-27.41%]
     </div>
     """
 
