@@ -38,7 +38,7 @@ st.markdown("""
     <img src="https://raw.githubusercontent.com/StenislausAnggaAprianto222112380/DashboardVisualisasi/refs/heads/main/unpkpd.jpg"
          alt="UNPKPD"
          title="Sumber gambar: Freepik.com"
-         style="max-width: 100%; height: auto; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />
+         style="max-width: 500px; width: 100%; height: auto; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />
 </div>
 """, unsafe_allow_html=True)
 
