@@ -3,7 +3,6 @@ import pandas as pd
 import geopandas as gpd
 import folium
 from streamlit_folium import st_folium
-from branca.colormap import linear
 
 # --- SETUP HALAMAN ---
 st.set_page_config(page_title="Unmet Need Disabilitas 2023", layout="wide")
@@ -45,60 +44,73 @@ st.markdown("<p class='subtext'>Unmet need pelayanan kesehatan pada penyandang d
 # --- DATA ---
 df = pd.read_excel("DatasetVisualisasi.xlsx")
 
-# Statistik ringkas
+# --- Statistik ---
 rata2_unmet = df['unpkpd'].mean()
 kab_tertinggi = df.loc[df['unpkpd'].idxmax()]
 kab_terendah = df.loc[df['unpkpd'].idxmin()]
 
 summary = {
-    'tinggi': df[df['cat_unpk'] == 'Sangat Tinggi'].shape[0],
+    'tinggi': df[df['cat_unpk'] == 'Tinggi'].shape[0],
     'sedang': df[df['cat_unpk'] == 'Sedang'].shape[0],
-    'rendah': df[df['cat_unpk'] == 'Rendah'].shape[0]
+    'rendah': df[df['cat_unpk'] == 'Rendah'].shape[0],
+    'sangat tinggi': df[df['cat_unpk'] == 'Sangat Tinggi'].shape[0],
+    'sangat rendah': df[df['cat_unpk'] == 'Sangat Rendah'].shape[0]
 }
 
 # --- STATISTIK KARTU ---
 st.markdown("""
-<div style='display: flex; gap: 1rem;'>
+<div style='display: flex; gap: 1rem; flex-wrap: wrap;'>
     <div style='flex:1; background-color: #E7F5EC; padding: 1.25rem; border-radius: 10px;'>
         <div class='card-title'>Unmet Need</div>
         <div class='card-value'>{:.1f}%</div>
         <div class='card-subtext'>Rata-rata unmet need di Pulau Jawa</div>
     </div>
-    <div style='flex:1; background-color: #F3F7FA; padding: 1.25rem; border-radius: 10px;'>
+    <div style='flex:2; background-color: #F3F7FA; padding: 1.25rem; border-radius: 10px;'>
         <div class='card-title'>Sebaran Wilayah</div>
-        <div class='card-value'>Tinggi: {} | Sedang: {} | Rendah: {}</div>
+        <div class='card-value'>
+            Sangat Tinggi: {sangat_tinggi} | Tinggi: {tinggi} |
+            Sedang: {sedang} | Rendah: {rendah} | Sangat Rendah: {sangat_rendah}
+        </div>
     </div>
     <div style='flex:1; background-color: #FFF4F4; padding: 1.25rem; border-radius: 10px;'>
         <div class='card-title'>Kab/Kota Tertinggi</div>
-        <div class='card-value'>{} <br> {:.1f}%</div>
+        <div class='card-value'>{kab_max} <br> {val_max:.1f}%</div>
     </div>
     <div style='flex:1; background-color: #F1FFF0; padding: 1.25rem; border-radius: 10px;'>
         <div class='card-title'>Kab/Kota Terendah</div>
-        <div class='card-value'>{} <br> {:.1f}%</div>
+        <div class='card-value'>{kab_min} <br> {val_min:.1f}%</div>
     </div>
 </div>
 """.format(
     rata2_unmet,
-    summary['tinggi'], summary['sedang'], summary['rendah'],
-    kab_tertinggi['kabkot'], kab_tertinggi['unpkpd'],
-    kab_terendah['kabkot'], kab_terendah['unpkpd']
+    sangat_tinggi=summary['sangat tinggi'],
+    tinggi=summary['tinggi'],
+    sedang=summary['sedang'],
+    rendah=summary['rendah'],
+    sangat_rendah=summary['sangat rendah'],
+    kab_max=kab_tertinggi['name_kabkot'],
+    val_max=kab_tertinggi['unpkpd'],
+    kab_min=kab_terendah['name_kabkot'],
+    val_min=kab_terendah['unpkpd']
 ), unsafe_allow_html=True)
 
 # --- PETA ---
 gdf = gpd.read_file("KabJawa.geojson")
 
-# Samakan tipe data kolom join
+# Pastikan kolom ID sama tipe data
 gdf["IDKAB"] = gdf["IDKAB"].astype(str)
 df["kabkot"] = df["kabkot"].astype(str)
 
+# Gabungkan
 gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
 
+# Warna kategori baru
 color_dict = {
-    'Sangat Tinggi': '#B71C1C',
-    'Tinggi': '#F44336',
-    'Sedang': '#FFEB3B',
-    'Rendah': '#81C784',
-    'Sangat Rendah': '#388E3C'
+    'Sangat Tinggi': '#B91C1C',  # merah bata
+    'Tinggi': '#F87171',         # merah
+    'Sedang': '#FDBA74',         # oranye
+    'Rendah': '#FDE68A',         # kuning
+    'Sangat Rendah': '#B9FBC0'   # hijau muda
 }
 
 m = folium.Map(location=[-7.5, 111], zoom_start=6, tiles="cartodbpositron")
@@ -112,7 +124,7 @@ for _, row in gdf.iterrows():
             'weight': 0.5,
             'fillOpacity': 0.6
         },
-        tooltip=folium.Tooltip(f"{row['kabkot']}: {row['unpkpd']}%")
+        tooltip=folium.Tooltip(f"{row['name_kabkot']}: {row['unpkpd']}%")
     ).add_to(m)
 
 st.markdown("## Peta Interaktif")
