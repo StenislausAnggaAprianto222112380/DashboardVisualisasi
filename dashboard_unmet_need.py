@@ -2,18 +2,16 @@ import streamlit as st
 import pandas as pd
 import geopandas as gpd
 import folium
-import json
 from streamlit_folium import st_folium
-from branca.colormap import LinearColormap
 from shapely.geometry import shape
+import json
 
-# --- STYLING & PAGE SETUP ---
-st.set_page_config("Dashboard UNPK PD Disabilitas 2023", layout="wide")
-with open("style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+st.set_page_config(layout="wide")
+st.title("Dashboard Visualisasi UNPK Penyandang Disabilitas 2023 - Pulau Jawa")
 
-# --- LOAD DATA ---
+# --- BACA DATA ---
 @st.cache_data
+
 def load_data():
     df = pd.read_excel("DatasetVisualisasi.xlsx")
     gdf = gpd.read_file("KabJawa.shp")
@@ -21,110 +19,23 @@ def load_data():
 
 df, gdf = load_data()
 
-# --- MERGE DATA ---
-gdf["IDKAB"] = gdf["IDKAB"].astype(str)
-df["kabkot"] = df["kabkot"].astype(str)
-gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot", how="left")
+# --- GABUNGKAN DATAFRAME ---
+merged_gdf = gdf.merge(df, left_on="IDKAB", right_on="kabkot")
 
-# --- KATEGORI UNPKPD ---
-def kategori_unpkpd(persen):
-    if persen <= 10:
-        return "Sangat Rendah"
-    elif persen <= 20:
-        return "Rendah"
-    elif persen <= 30:
-        return "Sedang"
-    elif persen <= 40:
-        return "Tinggi"
-    else:
-        return "Sangat Tinggi"
-
-gdf["kategori"] = gdf["unpkpd"].apply(kategori_unpkpd)
-
-# --- WARNA PETA ---
+# --- BUAT WARNA KATEGORI ---
 color_dict = {
-    "Sangat Rendah": "#b7e4c7",  # Hijau muda
-    "Rendah": "#fef9b0",         # Kuning
-    "Sedang": "#fdae61",         # Orange
-    "Tinggi": "#f46d43",         # Merah
-    "Sangat Tinggi": "#980043"   # Merah bata
+    "Sangat Rendah": "#b7f7a5",
+    "Rendah": "#f7f79c",
+    "Sedang": "#fca15e",
+    "Tinggi": "#f75d59",
+    "Sangat Tinggi": "#8b0000",
 }
 
-# --- HEADER ---
-st.markdown("<h1 style='text-align: center;'>UNPK PD Pelayanan Kesehatan Penyandang Disabilitas di Pulau Jawa Tahun 2023</h1>", unsafe_allow_html=True)
-
-# --- STATISTIK ---
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    st.markdown("""
-        <div class='card hover-card'>
-            <h2>UNPK PD</h2>
-            <h1>22.8%</h1>
-            <p>Penyandang disabilitas yang kebutuhannya belum terpenuhi</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    kategori_count = gdf["kategori"].value_counts()
-    st.markdown(f"""
-        <div class='card hover-card'>
-            <h2>Sebaran Wilayah</h2>
-            <p>Sangat Tinggi: {kategori_count.get('Sangat Tinggi', 0)}</p>
-            <p>Tinggi: {kategori_count.get('Tinggi', 0)}</p>
-            <p>Sedang: {kategori_count.get('Sedang', 0)}</p>
-            <p>Rendah: {kategori_count.get('Rendah', 0)}</p>
-            <p>Sangat Rendah: {kategori_count.get('Sangat Rendah', 0)}</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    max_row = gdf.loc[gdf["unpkpd"].idxmax()]
-    st.markdown(f"""
-        <div class='card hover-card'>
-            <h2>Kabupaten Tertinggi</h2>
-            <h1>{max_row["unpkpd"]:.1f}%</h1>
-            <p>{max_row["name_kabkot"]}</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col4:
-    min_row = gdf.loc[gdf["unpkpd"].idxmin()]
-    st.markdown(f"""
-        <div class='card hover-card'>
-            <h2>Kabupaten Terendah</h2>
-            <h1>{min_row["unpkpd"]:.1f}%</h1>
-            <p>{min_row["name_kabkot"]}</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-# --- PILIHAN FILTRASI ---
-col_kat, col_prov = st.columns(2)
-kategori_opsi = ["Semua"] + list(gdf["kategori"].unique())
-prov_opsi = ["Semua"] + sorted(gdf["PROVINSI"].unique())
-
-with col_kat:
-    selected_kategori = st.selectbox("Kategori", kategori_opsi)
-
-with col_prov:
-    selected_prov = st.selectbox("Provinsi", prov_opsi)
-
-# --- FILTER DATA ---
-filtered_gdf = gdf.copy()
-if selected_kategori != "Semua":
-    filtered_gdf = filtered_gdf[filtered_gdf["kategori"] == selected_kategori]
-if selected_prov != "Semua":
-    filtered_gdf = filtered_gdf[filtered_gdf["PROVINSI"] == selected_prov]
-
-# --- PETA FOLIUM ---
-#import json
-m = folium.Map(location=[-7.5, 110.5], zoom_start=7, tiles="cartodbpositron")
-
-# Konversi GeoDataFrame ke GeoJSON sekali saja agar ringan
-geojson_data = json.loads(filtered_gdf.to_json())
+# --- BUAT FUNGSI UNTUK PETA ---
+geojson_data = json.loads(merged_gdf.to_json())
 
 def style_function(feature):
-    kategori = feature["properties"]["kategori"]
+    kategori = feature["properties"].get("cat_unpk")
     color = color_dict.get(kategori, "#d3d3d3")
     return {
         "fillColor": color,
@@ -136,20 +47,83 @@ def style_function(feature):
 def highlight_function(feature):
     return {"weight": 3, "color": "black"}
 
-# Tooltip interaktif
-geojson_layer = folium.GeoJson(
-    geojson_data,
-    style_function=style_function,
-    highlight_function=highlight_function,
-    tooltip=folium.GeoJsonTooltip(
-        fields=["name_kabkot", "unpkpd", "kategori", "cat_rse"],
+# --- KOMPONEN STATISTIK KARTU ---
+kab_tertinggi = df.loc[df['unpkpd'].idxmax()]
+kab_terendah = df.loc[df['unpkpd'].idxmin()]
+rata2_unpk = df['unpkpd'].mean()
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">Kabupaten Tertinggi</div>
+        <div class="card-value">{}</div>
+    </div>
+    """.format(kab_tertinggi['name_kabkot']), unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">Kabupaten Terendah</div>
+        <div class="card-value">{}</div>
+    </div>
+    """.format(kab_terendah['name_kabkot']), unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">Rata-rata UNPKPD</div>
+        <div class="card-value">{:.2f}%</div>
+    </div>
+    """.format(rata2_unpk), unsafe_allow_html=True)
+
+# --- TAMPILKAN PETA ---
+with st.container():
+    st.subheader("Peta Sebaran UNPKPD")
+
+    m = folium.Map(location=[-7.5, 110.5], zoom_start=7, tiles="cartodbpositron")
+
+    tooltip = folium.GeoJsonTooltip(
+        fields=["name_kabkot", "unpkpd", "cat_unpk", "cat_rse"],
         aliases=["Kabupaten/Kota:", "UNPKPD (%):", "Kategori UNPKPD:", "Kategori Data:"],
         sticky=True,
         labels=True
     )
-)
 
-geojson_layer.add_to(m)
+    geojson_layer = folium.GeoJson(
+        geojson_data,
+        style_function=style_function,
+        highlight_function=highlight_function,
+        tooltip=tooltip
+    )
 
-st.markdown("### Peta Interaktif")
-st_folium(m, width=1200, height=600)
+    geojson_layer.add_to(m)
+    st_folium(m, width=1200, height=600)
+
+# --- CSS UNTUK EFEK TIMBUL KARTU ---
+st.markdown("""
+<style>
+.card {
+    background-color: #f0f2f6;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 4px 4px 12px rgba(0,0,0,0.2);
+}
+.card-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+.card-value {
+    font-size: 28px;
+    color: #007BFF;
+}
+</style>
+""", unsafe_allow_html=True)
