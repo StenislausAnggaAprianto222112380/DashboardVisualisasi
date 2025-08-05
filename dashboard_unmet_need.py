@@ -46,6 +46,17 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# --- HITUNG NILAI UNTUK STATISTIK KARTU ---
+jumlah_st = gdf[gdf["cat_unpk"] == "Sangat Tinggi"].shape[0]
+jumlah_sr = gdf[gdf["cat_unpk"] == "Sangat Rendah"].shape[0]
+
+kab_tertinggi = gdf.loc[gdf["unpkpd"].idxmax(), "name_kabkot"]
+unpk_tertinggi = gdf["unpkpd"].max()
+
+kab_terendah = gdf.loc[gdf["unpkpd"].idxmin(), "name_kabkot"]
+unpk_terendah = gdf["unpkpd"].min()
+
+
 # --- Kolom Statistik ---
 col1, col2, col3, col4, col5 = st.columns(5)
 
