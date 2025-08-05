@@ -167,5 +167,29 @@ else:
 
     geojson_layer.add_to(m)
 
+    # --- LEGEND HTML ---
+    legend_html = """
+    <div style="
+        position: fixed; 
+        bottom: 40px; left: 40px; width: 200px; 
+        background-color: white;
+        border:2px solid grey; 
+        z-index:9999; 
+        font-size:14px;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.3);">
+        <b>Legenda Kategori UNPKPD</b><br>
+        <i style="background:#b7f7a5;width:18px;height:18px;float:left;margin-right:8px;"></i>Sangat Rendah<br>
+        <i style="background:#f7f79c;width:18px;height:18px;float:left;margin-right:8px;"></i>Rendah<br>
+        <i style="background:#fca15e;width:18px;height:18px;float:left;margin-right:8px;"></i>Sedang<br>
+        <i style="background:#f75d59;width:18px;height:18px;float:left;margin-right:8px;"></i>Tinggi<br>
+        <i style="background:#8b0000;width:18px;height:18px;float:left;margin-right:8px;"></i>Sangat Tinggi
+    </div>
+    """
+
+m.get_root().html.add_child(folium.Element(legend_html))
+
+
     st.markdown("### Peta Interaktif")
     st_folium(m, width=1200, height=600)
