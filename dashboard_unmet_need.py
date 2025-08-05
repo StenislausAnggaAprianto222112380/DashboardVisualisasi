@@ -33,10 +33,12 @@ color_dict = {
 }
 
 st.markdown("""
-<div style="text-align: center;">
-    <img src="https://raw.githubusercontent.com/StenislausAnggaAprianto222112380/DashboardVisualisasi/refs/heads/main/unpkpd.jpg" alt="Ilustrasi UNPKPD" width="800"/>
-    <p style="font-size: 13px; color: grey;">Sumber gambar: Freepik.com</p>
+<div style="display: flex; justify-content: center;">
+    <img src="https://raw.githubusercontent.com/StenislausAnggaAprianto222112380/DashboardVisualisasi/refs/heads/main/unpkpd.jpg"
+         alt="UNPKPD"
+         style="max-width: 100%; height: auto; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"/>
 </div>
+<p style="text-align: center; font-size: 13px; color: grey;">Sumber gambar: Freepik.com</p>
 """, unsafe_allow_html=True)
 
 # --- HEADER ---
